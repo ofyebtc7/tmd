@@ -10,7 +10,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ erro: 'Dados incompletos' }, { status: 400 })
     }
 
-    const checkoutUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/${pedidoId}`
+    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/+$/, '')
+    const checkoutUrl = `${siteUrl}/checkout/${pedidoId}`
 
     const response = await fetch(`${PINPAY_BASE_URL}/pix`, {
       method: 'POST',
