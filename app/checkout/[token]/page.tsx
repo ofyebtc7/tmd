@@ -2,7 +2,6 @@
 
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useState, useEffect, useCallback } from 'react'
-import QRCode from 'qrcode'
 
 const IMG_BASE = '/img/'
 
@@ -150,7 +149,6 @@ function CheckoutInner() {
   const [cpfCartaoValido, setCpfCartaoValido] = useState<boolean | null>(null)
   const [parcelas, setParcelas] = useState(1)
   const [bandeira, setBandeira] = useState<Bandeira>(null)
-  const [errosCartao, setErrosCartao] = useState<Record<string, string>>({})
   const [tentouSubmitCartao, setTentouSubmitCartao] = useState(false)
 
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 1024)
@@ -161,6 +159,10 @@ function CheckoutInner() {
     handleResize()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
   }, [])
 
   const dadosIdentOk =
@@ -246,6 +248,7 @@ function CheckoutInner() {
       if (!res.ok) throw new Error(data.erro || 'Erro ao gerar PIX')
 
       setPixCode(data.pixCode)
+      const { default: QRCode } = await import('qrcode')
       const url = await QRCode.toDataURL(data.pixCode, {
         errorCorrectionLevel: 'M',
         width: 300,
@@ -353,7 +356,7 @@ function CheckoutInner() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
-        body { margin: 0; padding: 0; background-color: #FFFFFF; }
+        body { margin: 0; padding: 0; background-color: #FFFFFF; overflow-x: hidden; }
         @media (max-width: 1023px) {
           .checkout-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
           .checkout-grid > div:nth-child(1) { order: 1 !important; }
@@ -388,7 +391,12 @@ function CheckoutInner() {
 
       {/* Banner */}
       <div style={{ background: COR_FOOTER, color: '#fff', textAlign: 'center', padding: '12px 16px', fontSize: 14 }}>
-        <p style={{ margin: 0 }}>🚚 Você ganhou <strong style={{ color: '#FCD34D' }}>FRETE GRÁTIS</strong> + <u>Brinde exclusivo</u> hoje!</p>
+        <p style={{ margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <path d="M3 6h11v9H3z"></path><path d="M14 10h4l3 3v3h-7z"></path><circle cx="7.5" cy="18" r="1.5"></circle><circle cx="18.5" cy="18" r="1.5"></circle>
+          </svg>
+          <span>Você ganhou <strong style={{ color: '#FCD34D' }}>FRETE GRÁTIS</strong> + <u>Brinde exclusivo</u> hoje!</span>
+        </p>
       </div>
 
       {/* Main Content - 3 Columns Desktop */}
@@ -496,8 +504,9 @@ function CheckoutInner() {
                         {cepValido === true && <CheckIcon />}
                       </div>
                       {cidade && uf && (
-                        <div style={{ flex: 2, fontSize: 11, color: '#6B7280', paddingBottom: 12 }}>
-                          📍 {cidade} - {uf}
+                        <div style={{ flex: 2, fontSize: 11, color: '#6B7280', paddingBottom: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                          <span>{cidade} - {uf}</span>
                         </div>
                       )}
                     </div>
@@ -540,7 +549,7 @@ function CheckoutInner() {
                             <img src="/img/seguro/correios.png" alt="Correios" style={{ height: 22, width: 'auto', objectFit: 'contain' }} />
                             <div>
                               <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#111827' }}>PAC - Correios</p>
-                              <p style={{ margin: 0, fontSize: 11, color: '#6B7280' }}>5 a 15 dias 📦</p>
+                              <p style={{ margin: 0, fontSize: 11, color: '#6B7280', display: 'flex', alignItems: 'center', gap: 4 }}>5 a 15 dias <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M21 8l-9-5-9 5v8l9 5 9-5z"></path><path d="M3 8l9 5 9-5"></path><path d="M12 13v8"></path></svg></p>
                             </div>
                           </div>
                           <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>Grátis</span>
@@ -564,7 +573,7 @@ function CheckoutInner() {
                             <img src="/img/seguro/full.svg" alt="Envio FULL" style={{ height: 22, width: 'auto', objectFit: 'contain' }} />
                             <div>
                               <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#111827' }}>Envio FULL</p>
-                              <p style={{ margin: 0, fontSize: 11, color: '#6B7280' }}>Entrega garantida <span style={{color: '#10B981', fontWeight: 800}}>⚡ FULL</span></p>
+                              <p style={{ margin: 0, fontSize: 11, color: '#6B7280', display: 'flex', alignItems: 'center', gap: 4 }}>Entrega garantida <span style={{ color: '#10B981', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 2 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>FULL</span></p>
                             </div>
                           </div>
                           <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>R$ 21,90</span>
@@ -761,7 +770,15 @@ function CheckoutInner() {
                               </div>
                               <div>
                                 <label style={labelStyle}>CVV</label>
-                                <input style={inputStyle} placeholder="123" />
+                                <div style={{ position: 'relative' }}>
+                                  <input
+                                    style={{ ...inputStyle, background: '#fff', letterSpacing: '0.05em', borderColor: tentouSubmitCartao && cvv.length < 3 ? '#EF4444' : cvv.length >= 3 ? '#13BF8C' : '#E5E7EB' }}
+                                    value={cvv}
+                                    onChange={e => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                                    placeholder="123" maxLength={4} inputMode="numeric" />
+                                  {cvv.length >= 3 && <CheckIcon />}
+                                </div>
+                                {tentouSubmitCartao && cvv.length < 3 && <FieldError msg="CVV inválido" />}
                               </div>
                             </div>
 
@@ -789,7 +806,7 @@ function CheckoutInner() {
                               </div>
                             </div>
 
-                            <button onClick={() => setErro('Por favor, utilize o pagamento via PIX no momento.')} style={btnPrimario}>
+                            <button onClick={() => { setTentouSubmitCartao(true); setErro('Por favor, utilize o pagamento via PIX no momento.'); }} style={btnPrimario}>
                               Finalizar Compra · {parcelas}x de R$ {(valorTotal / parcelas).toFixed(2).replace('.', ',')}
                             </button>
                             {erro && <p style={{ color: '#EF4444', fontSize: 13, margin: '8px 0 0', textAlign: 'center' }}>{erro}</p>}
