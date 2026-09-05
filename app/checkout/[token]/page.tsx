@@ -363,6 +363,7 @@ function CheckoutInner() {
         body { margin: 0; padding: 0; background-color: #FFFFFF; overflow-x: hidden; overflow-x: clip; }
         html, body { touch-action: manipulation; }
         button, a, input, select, textarea { touch-action: manipulation; }
+        .checkout-shell { min-height: 100vh; min-height: 100dvh; }
         @media (max-width: 1023px) {
           input, select, textarea { font-size: 16px !important; }
           .checkout-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
@@ -375,7 +376,7 @@ function CheckoutInner() {
           .field-row-2fr, .field-row-half { grid-template-columns: 1fr !important; }
         }
       `}</style>
-      <div style={{ minHeight: '100vh', background: COR_BG, fontFamily: "'Poppins', system-ui, sans-serif", display: 'flex', flexDirection: 'column' }}>
+      <div className="checkout-shell" style={{ background: COR_BG, fontFamily: "'Poppins', system-ui, sans-serif", display: 'flex', flexDirection: 'column' }}>
       
       {/* Header */}
       <div style={{ background: '#fff' }}>
@@ -417,7 +418,7 @@ function CheckoutInner() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 18, fontWeight: 700, color: '#111827', margin: passo === 1 ? '0 0 16px' : '0 0 12px' }}>
                 <span>Identificação</span>
                 {passo === 1 ? stepIndicator(1, 3) : (
-                  <button onClick={() => setPasso(1)} style={{ background: 'none', border: 'none', color: '#6B7280', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <button onClick={() => setPasso(1)} style={{ background: 'none', border: 'none', color: '#6B7280', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, padding: '10px 6px', margin: '-10px -6px', touchAction: 'manipulation' }}>
                     Editar
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                   </button>
@@ -489,7 +490,7 @@ function CheckoutInner() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 18, fontWeight: 700, color: '#111827', margin: passo === 2 ? '0 0 16px' : '0 0 12px' }}>
                 <span>{passo > 2 ? 'Enviar para' : 'Entrega'}</span>
                 {passo === 2 ? stepIndicator(2, 3) : (
-                  <button onClick={() => setPasso(2)} style={{ background: 'none', border: 'none', color: '#6B7280', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <button onClick={() => setPasso(2)} style={{ background: 'none', border: 'none', color: '#6B7280', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, padding: '10px 6px', margin: '-10px -6px', touchAction: 'manipulation' }}>
                     Editar
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                   </button>
@@ -550,7 +551,7 @@ function CheckoutInner() {
                       <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: '0 0 12px' }}>Escolha o frete:</p>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         {/* PAC */}
-                        <div onClick={() => setEntrega('pac')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', border: entrega === 'pac' ? '1px solid #13BF8C' : '1px solid #E5E7EB', borderRadius: 8, background: entrega === 'pac' ? '#F0FDF4' : '#fff', cursor: 'pointer' }}>
+                        <div onClick={() => setEntrega('pac')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', border: entrega === 'pac' ? '1px solid #13BF8C' : '1px solid #E5E7EB', borderRadius: 8, background: entrega === 'pac' ? '#F0FDF4' : '#fff', cursor: 'pointer', touchAction: 'manipulation' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <input type="radio" checked={entrega === 'pac'} readOnly style={{ accentColor: '#13BF8C', width: 16, height: 16 }} />
                             <img src="/img/seguro/correios.png" alt="Correios" style={{ height: 22, width: 'auto', objectFit: 'contain' }} />
@@ -562,7 +563,7 @@ function CheckoutInner() {
                           <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>Grátis</span>
                         </div>
                         {/* SEDEX */}
-                        <div onClick={() => setEntrega('sedex')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', border: entrega === 'sedex' ? '1px solid #13BF8C' : '1px solid #E5E7EB', borderRadius: 8, background: entrega === 'sedex' ? '#F0FDF4' : '#fff', cursor: 'pointer' }}>
+                        <div onClick={() => setEntrega('sedex')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', border: entrega === 'sedex' ? '1px solid #13BF8C' : '1px solid #E5E7EB', borderRadius: 8, background: entrega === 'sedex' ? '#F0FDF4' : '#fff', cursor: 'pointer', touchAction: 'manipulation' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <input type="radio" checked={entrega === 'sedex'} readOnly style={{ accentColor: '#13BF8C', width: 16, height: 16 }} />
                             <img src="/img/seguro/sedex.png" alt="Sedex" style={{ height: 22, width: 'auto', objectFit: 'contain' }} />
@@ -574,7 +575,7 @@ function CheckoutInner() {
                           <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>R$ 14,90</span>
                         </div>
                         {/* FULL */}
-                        <div onClick={() => setEntrega('full')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', border: entrega === 'full' ? '1px solid #13BF8C' : '1px solid #E5E7EB', borderRadius: 8, background: entrega === 'full' ? '#F0FDF4' : '#fff', cursor: 'pointer' }}>
+                        <div onClick={() => setEntrega('full')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', border: entrega === 'full' ? '1px solid #13BF8C' : '1px solid #E5E7EB', borderRadius: 8, background: entrega === 'full' ? '#F0FDF4' : '#fff', cursor: 'pointer', touchAction: 'manipulation' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <input type="radio" checked={entrega === 'full'} readOnly style={{ accentColor: '#13BF8C', width: 16, height: 16 }} />
                             <img src="/img/seguro/full.svg" alt="Envio FULL" style={{ height: 22, width: 'auto', objectFit: 'contain' }} />
@@ -619,7 +620,7 @@ function CheckoutInner() {
               {passo === 3 && (
                 <>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
-                    <div onClick={() => setMetodo('pix')} style={{ border: `1px solid ${metodo === 'pix' ? '#13BF8C' : '#E5E7EB'}`, borderRadius: 8, cursor: 'pointer', background: '#fff' }}>
+                    <div onClick={() => setMetodo('pix')} style={{ border: `1px solid ${metodo === 'pix' ? '#13BF8C' : '#E5E7EB'}`, borderRadius: 8, cursor: 'pointer', background: '#fff', touchAction: 'manipulation' }}>
                       <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: metodo === 'pix' ? '1px solid #E5E7EB' : 'none' }}>
                         <input type="radio" checked={metodo === 'pix'} readOnly style={{ accentColor: '#13BF8C', width: 16, height: 16 }} />
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 12L12 6L18 12L12 18L6 12Z" fill="#13BF8C"/><path d="M12 10.5L13.5 12L12 13.5L10.5 12L12 10.5Z" fill="#fff"/></svg>
@@ -657,7 +658,7 @@ function CheckoutInner() {
                       )}
                     </div>
 
-                    <div onClick={() => setMetodo('cartao')} style={{ border: `1px solid ${metodo === 'cartao' ? '#13BF8C' : '#E5E7EB'}`, borderRadius: 8, cursor: 'pointer', background: '#fff' }}>
+                    <div onClick={() => setMetodo('cartao')} style={{ border: `1px solid ${metodo === 'cartao' ? '#13BF8C' : '#E5E7EB'}`, borderRadius: 8, cursor: 'pointer', background: '#fff', touchAction: 'manipulation' }}>
                       <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: metodo === 'cartao' ? '1px solid #E5E7EB' : 'none' }}>
                         <input type="radio" checked={metodo === 'cartao'} readOnly style={{ accentColor: '#13BF8C', width: 16, height: 16 }} />
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
@@ -833,7 +834,7 @@ function CheckoutInner() {
             <div style={boxStyle}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: 0 }}>Resumo do pedido</h2>
-                <button onClick={() => setResumoAberto(v => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }} aria-label={resumoAberto ? 'Ocultar resumo' : 'Exibir resumo'}>
+                <button onClick={() => setResumoAberto(v => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 10, margin: '-6px', display: 'flex', alignItems: 'center', touchAction: 'manipulation' }} aria-label={resumoAberto ? 'Ocultar resumo' : 'Exibir resumo'} aria-expanded={resumoAberto}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: resumoAberto ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }}>
                     <polyline points="6 9 12 15 18 9"></polyline>
                   </svg>
@@ -875,9 +876,9 @@ function CheckoutInner() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: 12, color: '#111827' }}>R$ {valor.toFixed(2).replace('.', ',')}</span>
                         <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #E5E7EB', borderRadius: 4, overflow: 'hidden' }}>
-                          <button onClick={() => setQtd(v => Math.max(1, v - 1))} style={{ padding: '2px 8px', background: '#F9FAFB', color: '#9CA3AF', fontSize: 14, border: 'none', cursor: 'pointer', lineHeight: 1 }}>-</button>
-                          <span style={{ padding: '2px 12px', fontSize: 12, color: '#111827', borderLeft: '1px solid #E5E7EB', borderRight: '1px solid #E5E7EB', minWidth: 20, textAlign: 'center' }}>{un}</span>
-                          <button onClick={() => setQtd(v => Math.min(12, v + 1))} style={{ padding: '2px 8px', background: '#F9FAFB', color: '#9CA3AF', fontSize: 14, border: 'none', cursor: 'pointer', lineHeight: 1 }}>+</button>
+                          <button onClick={() => setQtd(v => Math.max(1, v - 1))} style={{ padding: '0 16px', minHeight: 44, background: '#F9FAFB', color: '#9CA3AF', fontSize: 18, border: 'none', cursor: 'pointer', lineHeight: 1, touchAction: 'manipulation' }} aria-label="Diminuir quantidade">−</button>
+                          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 12px', fontSize: 13, color: '#111827', borderLeft: '1px solid #E5E7EB', borderRight: '1px solid #E5E7EB', minWidth: 28, minHeight: 44, textAlign: 'center' }}>{un}</span>
+                          <button onClick={() => setQtd(v => Math.min(12, v + 1))} style={{ padding: '0 16px', minHeight: 44, background: '#F9FAFB', color: '#9CA3AF', fontSize: 18, border: 'none', cursor: 'pointer', lineHeight: 1, touchAction: 'manipulation' }} aria-label="Aumentar quantidade">+</button>
                         </div>
                       </div>
                     </div>

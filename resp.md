@@ -41,6 +41,11 @@
 | `app/checkout/[token]/page.tsx` | `body` | `overflow-x: hidden` → `overflow-x: hidden; overflow-x: clip` | Consistência do travamento horizontal. |
 | `app/checkout/[token]/page.tsx` | Documento do checkout | `html, body, button, a, input, select, textarea { touch-action: manipulation }` | Sem delay de toque e sem double-tap zoom no checkout. |
 | `app/checkout/[token]/page.tsx` | Inputs/select | Media query mobile: `input, select, textarea { font-size: 16px !important }` (só ≤1023px) | Corrige o zoom automático do iOS ao focar campos de 13px. |
+| `app/checkout/[token]/page.tsx` | Shell da página | Nova classe `.checkout-shell { min-height: 100vh; min-height: 100dvh }` | Corrige o problema clássico do `100vh` no iOS (barra de endereço), usando unidade dinâmica com fallback. |
+| `app/checkout/[token]/page.tsx` | Stepper de quantidade (`−`/`+`) | Alvos de toque ampliados para `minHeight: 44` + `touchAction: manipulation` + `aria-label` | Área de toque adequada e sem zoom/delay; acessibilidade por leitor de tela. |
+| `app/checkout/[token]/page.tsx` | Botões "Editar" (1 e 2) e toggle do resumo | Hit area ampliada (`padding` + margem negativa compensada) + `touchAction` + `aria-expanded` | Alvos de toque ≥40px sem alterar o layout. |
+| `app/checkout/[token]/page.tsx` | Cards de frete (PAC/Sedex/FULL) e de método (PIX/Cartão) | `touchAction: 'manipulation'` inline nos `<div onClick>` | Sem zoom por toque duplo e sem atraso ao selecionar opções. |
+| `app/layout.tsx` | Layout raiz (Next) | `export const viewport: Viewport = { width:'device-width', initialScale:1, viewportFit:'cover' }` | Viewport com `viewport-fit=cover` nas páginas Next (checkout), igual ao `index.html`. |
 
 > **Não usado:** `overflow-x: hidden` novo como máscara, `touch-action: none`, `user-scalable=no`/`maximum-scale=1`. Nenhuma dessas gambiarras foi aplicada.
 
@@ -67,11 +72,13 @@
 - **Performance:** nenhum listener novo pesado; `touchmove` não executa trabalho; marquee segue com `will-change` único.
 - **Desktop:** mouse, hover, foco e teclado intactos.
 - **Mobile:** sem atraso, sem zoom, sem deslocamento lateral, elementos dentro da viewport.
+- **Checkout (extensão do mesmo padrão):** `min-height: 100dvh`, alvos de toque ≥44px (stepper, "Editar", toggle do resumo), `touch-action: manipulation` nos cards de frete/método, viewport `viewport-fit=cover` via `app/layout.tsx` e campos de 16px no mobile.
 
 ---
 
 ## 6. PENDÊNCIAS / NÃO VERIFICADO EM RUNTIME
 
 - **Não testei em dispositivo real** — pedir confirmação do usuário em: iPhone (Safari) e Android (Chrome) nas larguras 320/360/390/412/430px, tablet 768px e desktop ≥1024px: (a) tocar e arrastar o dedo não desloca a página na horizontal; (b) toque duplo rápido não dá zoom; (c) botões respondem no mesmo instante do toque; (d) ao focar um campo no checkout não há salto de zoom.
+- **A verificar no checkout em dispositivo real:** (e) o stepper `−`/`+`, os botões "Editar" e os cards de frete/PIX/Cartão têm área de toque confortável; (f) focar campos não causa salto de zoom no iOS; (g) a página tem a altura correta no Safari iOS (não desce demais por causa da barra de endereço).
 - **Outro ponto observado (fora do escopo de responsividade):** o rodapé/menu apontam para `politica-frete.html`, `quem-somos.html`, etc., mas os arquivos estão em `public/<pagina>/index.html`. Em hospedagem que não faça rewrite/cleanUrls, esses links podem dar 404. Recomendo conferir a configuração de deploy (Vercel/GitHub Pages), mas **não alterei** por estar fora do objetivo e não ter certeza da infraestrutura. Isso precisa de decisão sua.
-- Sem commit/push realizados (regra do projeto).
+- Commit já criado a pedido do usuário (`854fcfc`); edições de checkout/layout desta rodada ainda **sem commit** (aguardando sua confirmação).
