@@ -1,26 +1,13 @@
 <html lang="pt-BR"><head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- ========================================================================
-     PLUGMAX — TOMADA INTELIGENTE (gerado a partir de _PAGINA-BASE, modelo "v3")
-     ------------------------------------------------------------------------
-     Tudo se monta a partir do objeto PRODUTO (lá embaixo, no <script>).
-     Cores da marca: bloco DESIGN TOKENS logo abaixo.
-     Checkout ATIVO: POST /api/checkout (Zedy) via CHECKOUT_ATIVO = true.
-     Dados da empresa/rastreio/garantia já preenchidos. CNPJ removido a pedido.
-     ===================================================================== -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Tomada Inteligente Plugmax — tomada, USB, USB-C e 2 cabos retráteis</title>
 <meta name="description" content="Tomada de parede com tomada N de 3 pinos, USB, USB-C e 2 cabos retráteis de 75cm (Lightning e Tipo-C). Carga rápida de 20W. Preto ou branco.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Tomada Inteligente Plugmax — tudo numa peça só">
 <meta property="og:image" content="img/galeria-1.webp">
-<link rel="icon" href="img/plugmax_icon.svg" type="image/svg+xml">
 
-<!-- ===== Utmify — rastreio de campanha (mesmo serviço que a Zedy repassa na venda) =====
-     1) Pixel de conversão: carrega o pixel.js e define window.pixelId.
-        Isto é o equivalente LIMPO do loader ofuscado enviado — faz exatamente
-        a mesma coisa (mesmo pixel.js, mesmo pixelId), sem o erro de sintaxe que
-        vinha no blob (`c_o.globals[]` / `c_o.attributes[]` quebravam o script). -->
+<!-- ===== UTMIFY — pixel de conversão e captura de UTMs ===== -->
 <script src="https://connect.facebook.net/signals/config/1732046867991263?v=2.9.393&amp;r=stable&amp;domain=plugmax.pages.dev&amp;hme=118644ce20ff837cfc6c6ee441987e9e11b8b9fb8ec6bc04b15a3c516441ba07&amp;ex_m=115%2C226%2C166%2C26%2C80%2C81%2C158%2C76%2C75%2C11%2C176%2C100%2C20%2C150%2C138%2C45%2C83%2C88%2C146%2C171%2C178%2C31%2C17%2C30%2C18%2C32%2C33%2C34%2C36%2C54%2C159%2C85%2C123%2C22%2C24%2C50%2C46%2C48%2C47%2C93%2C102%2C106%2C121%2C157%2C160%2C52%2C122%2C28%2C25%2C130%2C77%2C42%2C162%2C161%2C163%2C154%2C152%2C29%2C41%2C65%2C120%2C173%2C78%2C21%2C125%2C91%2C74%2C23%2C95%2C96%2C127%2C94%2C148%2C147%2C151%2C107%2C172%2C175%2C40%2C55%2C124%2C53%2C8%2C4%2C5%2C7%2C6%2C3%2C101%2C112%2C179%2C193%2C240%2C82%2C254%2C253%2C252%2C14%2C27%2C39%2C61%2C114%2C67%2C10%2C71%2C108%2C109%2C110%2C116%2C141%2C37%2C35%2C143%2C144%2C145%2C140%2C139%2C167%2C84%2C170%2C168%2C169%2C56%2C66%2C134%2C19%2C174%2C51%2C303%2C304%2C305%2C302%2C318%2C340%2C233%2C222%2C68%2C223%2C221%2C343%2C334%2C58%2C234%2C118%2C142%2C90%2C132%2C60%2C131%2C137%2C136%2C64%2C72%2C70%2C164%2C86%2C87%2C126%2C43%2C38%2C59%2C62%2C111%2C177%2C1%2C135%2C16%2C133%2C12%2C2%2C63%2C103%2C15%2C73%2C69%2C129%2C99%2C98%2C181%2C182%2C104%2C105%2C9%2C113%2C180%2C57%2C155%2C97%2C89%2C79%2C128%2C117%2C49%2C156%2C0%2C92%2C149%2C153%2C165%2C44%2C119%2C13%2C183" async=""></script><script async="" src="https://connect.facebook.net/en_US/fbevents.js"></script><script>
   window.pixelId = "6a60410c5a84ff2ea1c6e19f";
   (function(){
@@ -30,7 +17,7 @@
     (document.head || document.documentElement).appendChild(s);
   })();
 </script><script async="" defer="" src="https://cdn.utmify.com.br/scripts/pixel/pixel.js"></script>
-<!-- 2) Captura de UTMs (persiste as UTMs da URL para o checkout / venda). -->
+<!-- Captura de UTMs para o checkout / venda -->
 <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck="" data-utmify-prevent-subids="" async="" defer=""></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,8 +26,8 @@
 
 
 <style>
-  html { scroll-behavior:smooth; overflow-x:hidden; }
-  body { background:#F4F6FA; color:#1B2430; }
+  html { scroll-behavior:smooth; overflow-x:hidden; overflow-x:clip; }
+  body { background:#F4F6FA; color:#1B2430; overflow-x:hidden; overflow-x:clip; }
   .no-scrollbar::-webkit-scrollbar{ display:none; }
   .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
   details > summary { list-style:none; cursor:pointer; }
@@ -59,6 +46,29 @@
   .mb-1\.5 { margin-bottom:.375rem; }
   .mb-6 { margin-bottom:1.5rem; }
   .block { display:block; }
+  @keyframes spinf { to { transform: rotate(360deg); } }
+  .spin-fwd { animation: spinf .7s linear infinite; }
+  button[disabled] { -webkit-tap-highlight-color: transparent; }
+
+  /* ===== Interação mobile: toque preciso, sem zoom acidental =====
+     touch-action:manipulation elimina o atraso de ~300ms do double-tap e o
+     zoom por toque duplo em elementos interativos/superfícies tocáveis,
+     SEM bloquear o pinch-zoom (acessibilidade preservada).
+     overflow-x:clip trava o pan horizontal acidental sem criar scroller. */
+  html, body { touch-action: manipulation; }
+  button, a, summary, [role="button"], input, select, textarea { touch-action: manipulation; }
+
+  /* #menuBtn (~32px) e setas da galeria (~36px): área de toque ≥44px sem
+     alterar o visual — o pseudo-elemento transparente expande o hit area. */
+  #menuBtn { position: relative; }
+  #menuBtn::after { content: ""; position: absolute; inset: -6px; }
+  .gal-btn::after { content: ""; position: absolute; inset: -6px; border-radius: 9999px; }
+
+  /* Dots da galeria: o botão vira uma área de toque de 30x30 transparente;
+     o "ponto" visual (8px) fica num <span> centralizado. As margens negativas
+     mantêm o espaçamento visual idêntico ao original. */
+  .gal-dot { position: relative; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin: -11px; padding: 0; background: none; border: 0; touch-action: manipulation; }
+  .gal-dot > span { width: 8px; height: 8px; border-radius: 9999px; display: block; transition: background-color .2s; }
 </style>
 <style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:"Plus Jakarta Sans", system-ui, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.top-0{top:0px}.bottom-0{bottom:0px}.bottom-3{bottom:0.75rem}.left-0{left:0px}.left-1\/2{left:50%}.left-2{left:0.5rem}.left-3{left:0.75rem}.right-0{right:0px}.right-2{right:0.5rem}.right-3{right:0.75rem}.right-4{right:1rem}.top-1\/2{top:50%}.top-3{top:0.75rem}.top-4{top:1rem}.-top-2{top:-0.5rem}.right-1\.5{right:0.375rem}.top-1\.5{top:0.375rem}.z-40{z-index:40}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.-mx-4{margin-left:-1rem;margin-right:-1rem}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-5{margin-bottom:1.25rem}.ml-auto{margin-left:auto}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-1\.5{margin-top:0.375rem}.mt-2{margin-top:0.5rem}.mt-2\.5{margin-top:0.625rem}.mt-3{margin-top:0.75rem}.mt-4{margin-top:1rem}.mt-5{margin-top:1.25rem}.mt-8{margin-top:2rem}.mb-0\.5{margin-bottom:0.125rem}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.aspect-square{aspect-ratio:1 / 1}.h-4{height:1rem}.h-6{height:1.5rem}.h-2{height:0.5rem}.h-3\.5{height:0.875rem}.h-5{height:1.25rem}.h-9{height:2.25rem}.h-full{height:100%}.h-10{height:2.5rem}.h-11{height:2.75rem}.h-12{height:3rem}.h-3{height:0.75rem}.h-40{height:10rem}.h-8{height:2rem}.w-4{width:1rem}.w-6{width:1.5rem}.w-3\.5{width:0.875rem}.w-5{width:1.25rem}.w-9{width:2.25rem}.w-\[66px\]{width:66px}.w-auto{width:auto}.w-full{width:100%}.w-max{width:max-content}.w-10{width:2.5rem}.w-11{width:2.75rem}.w-12{width:3rem}.w-2{width:0.5rem}.w-3{width:0.75rem}.w-40{width:10rem}.w-8{width:2rem}.max-w-\[480px\]{max-width:480px}.max-w-full{max-width:100%}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.-translate-x-1\/2{--tw-translate-x:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\/2{--tw-translate-y:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-y-full{--tw-translate-y:100%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-pointer{cursor:pointer}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1\.5{gap:0.375rem}.gap-1{gap:0.25rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-0\.5{gap:0.125rem}.gap-x-4{column-gap:1rem}.gap-y-1{row-gap:0.25rem}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.divide-y > :not([hidden]) ~ :not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.divide-line > :not([hidden]) ~ :not([hidden]){--tw-divide-opacity:1;border-color:rgb(227 231 238 / var(--tw-divide-opacity, 1))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.whitespace-nowrap{white-space:nowrap}.rounded-2xl{border-radius:1rem}.rounded-cta{border-radius:12px}.rounded-full{border-radius:9999px}.rounded-xl{border-radius:0.75rem}.rounded{border-radius:0.25rem}.rounded-lg{border-radius:0.5rem}.border{border-width:1px}.border-2{border-width:2px}.border-x{border-left-width:1px;border-right-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-line{--tw-border-opacity:1;border-color:rgb(227 231 238 / var(--tw-border-opacity, 1))}.border-accent\/40{border-color:rgb(47 196 236 / 0.4)}.border-brand\/20{border-color:rgb(30 107 230 / 0.2)}.border-brand{--tw-border-opacity:1;border-color:rgb(30 107 230 / var(--tw-border-opacity, 1))}.bg-brandDk{--tw-bg-opacity:1;background-color:rgb(23 81 175 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-accent{--tw-bg-opacity:1;background-color:rgb(47 196 236 / var(--tw-bg-opacity, 1))}.bg-accent\/10{background-color:rgb(47 196 236 / 0.1)}.bg-black\/40{background-color:rgb(0 0 0 / 0.4)}.bg-brand{--tw-bg-opacity:1;background-color:rgb(30 107 230 / var(--tw-bg-opacity, 1))}.bg-brand\/10{background-color:rgb(30 107 230 / 0.1)}.bg-brand\/5{background-color:rgb(30 107 230 / 0.05)}.bg-buy{--tw-bg-opacity:1;background-color:rgb(22 163 74 / var(--tw-bg-opacity, 1))}.bg-gold{--tw-bg-opacity:1;background-color:rgb(245 166 35 / var(--tw-bg-opacity, 1))}.bg-line{--tw-bg-opacity:1;background-color:rgb(227 231 238 / var(--tw-bg-opacity, 1))}.bg-page{--tw-bg-opacity:1;background-color:rgb(244 246 250 / var(--tw-bg-opacity, 1))}.bg-white\/15{background-color:rgb(255 255 255 / 0.15)}.bg-white\/95{background-color:rgb(255 255 255 / 0.95)}.object-contain{object-fit:contain}.object-cover{object-fit:cover}.p-1{padding:0.25rem}.p-4{padding:1rem}.p-1\.5{padding:0.375rem}.p-2\.5{padding:0.625rem}.p-3{padding:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-3\.5{padding-top:0.875rem;padding-bottom:0.875rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-8{padding-top:2rem;padding-bottom:2rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.pb-24{padding-bottom:6rem}.pb-4{padding-bottom:1rem}.pb-5{padding-bottom:1.25rem}.pt-3{padding-top:0.75rem}.pt-4{padding-top:1rem}.pt-6{padding-top:1.5rem}.pb-2\.5{padding-bottom:0.625rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.align-middle{vertical-align:middle}.font-sans{font-family:"Plus Jakarta Sans", system-ui, sans-serif}.text-\[13px\]{font-size:13px}.text-2xl{font-size:1.5rem;line-height:2rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-\[11px\]{font-size:11px}.text-\[15px\]{font-size:15px}.text-\[22px\]{font-size:22px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-\[10px\]{font-size:10px}.text-\[34px\]{font-size:34px}.text-\[9px\]{font-size:9px}.font-semibold{font-weight:600}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-normal{font-weight:400}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-wide{letter-spacing:0.025em}.tracking-wider{letter-spacing:0.05em}.text-accentLt{--tw-text-opacity:1;color:rgb(126 220 245 / var(--tw-text-opacity, 1))}.text-brand{--tw-text-opacity:1;color:rgb(30 107 230 / var(--tw-text-opacity, 1))}.text-ink{--tw-text-opacity:1;color:rgb(27 36 48 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-accentDk{--tw-text-opacity:1;color:rgb(11 124 159 / var(--tw-text-opacity, 1))}.text-gold{--tw-text-opacity:1;color:rgb(245 166 35 / var(--tw-text-opacity, 1))}.text-muted{--tw-text-opacity:1;color:rgb(91 100 114 / var(--tw-text-opacity, 1))}.text-white\/80{color:rgb(255 255 255 / 0.8)}.text-line{--tw-text-opacity:1;color:rgb(227 231 238 / var(--tw-text-opacity, 1))}.line-through{-webkit-text-decoration-line:line-through;text-decoration-line:line-through}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.active\:scale-\[\.99\]:active{--tw-scale-x:.99;--tw-scale-y:.99;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}</style><style>
   </style></head>
@@ -80,7 +90,7 @@
     <button id="menuBtn" aria-label="Menu" class="p-1 text-brand">
       <svg viewBox="0 0 24 24" class="ic w-6 h-6" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
     </button>
-    <a href="index.html" class="flex items-center gap-1.5" aria-label="início" id="aefc4b8f-96b1-13ef-5dca-9cd55155d747">
+    <a href="index.html" class="flex items-center gap-1.5" aria-label="início">
       <svg width="26" height="26" viewBox="0 -4 96 104" fill="none" aria-hidden="true">
         <path d="M52 8 L12 56 L48 56 L44 88 L84 40 L48 40 Z" fill="#1E6BE6"></path>
         <path d="M52 8 L12 56 L48 56 L44 88 L84 40 L48 40 Z" fill="#2FC4EC" transform="translate(48,48) scale(0.5) translate(-48,-48)"></path>
@@ -99,22 +109,22 @@
   <div class="absolute inset-0 bg-black/40" data-close=""></div>
   <nav class="absolute top-0 left-1/2 -translate-x-1/2 h-full w-full max-w-[480px] bg-white shadow-xl flex flex-col">
     <div class="relative bg-brandDk text-white text-center px-6 pt-6 pb-5">
-      <button data-close="" aria-label="Fechar" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/15 flex items-center justify-center text-lg leading-none" id="eb0e3d22-7b13-957a-998b-148263cb58bf">✕</button>
+      <button data-close="" aria-label="Fechar" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/15 flex items-center justify-center text-lg leading-none">✕</button>
       <div class="font-extrabold text-2xl tracking-tight" data-marca="">Plugmax</div>
       <p class="text-white/80 text-sm mt-1">Loja oficial</p>
     </div>
     <div class="flex-1 overflow-y-auto px-5 py-3">
-      <a href="index.html" data-close="" class="flex items-center justify-between py-3 border-b border-line font-semibold" id="14d64bc6-50af-519a-300b-68053713cfe8"><span>Início</span><span class="text-muted">›</span></a>
+      <a href="index.html" data-close="" class="flex items-center justify-between py-3 border-b border-line font-semibold"><span>Início</span><span class="text-muted">›</span></a>
       <a id="linkRastreio" target="_blank" rel="noopener" data-close="" class="flex items-center justify-between py-3 border-b border-line font-semibold" href="https://rastreie-seupedido.online/track"><span>Rastrear Pedido</span><span class="text-muted">›</span></a>
       <p class="text-xs font-bold tracking-wider text-muted mt-5 mb-1">POLÍTICAS</p>
-      <a href="politica-frete.html" data-close="" class="flex items-center justify-between py-2.5 border-b border-line" id="8ee6a91d-6519-807d-736b-7ffcae39d25d"><span>Política de Frete</span><span class="text-muted">›</span></a>
-      <a href="pagamento-seguro.html" data-close="" class="flex items-center justify-between py-2.5 border-b border-line" id="8ad0f275-c934-0942-895c-2e644e90e9b0"><span>Pagamento Seguro</span><span class="text-muted">›</span></a>
-      <a href="termos-uso.html" data-close="" class="flex items-center justify-between py-2.5 border-b border-line" id="e6c2896a-8fae-2edc-22bb-8ab38e4e94dc"><span>Termos de Uso</span><span class="text-muted">›</span></a>
-      <a href="trocas-reembolso.html" data-close="" class="flex items-center justify-between py-2.5" id="cdef873e-d91c-691f-3a3f-1e83116fa1ce"><span>Trocas e Reembolso</span><span class="text-muted">›</span></a>
+      <a href="politica-frete.html" data-close="" class="flex items-center justify-between py-2.5 border-b border-line"><span>Política de Frete</span><span class="text-muted">›</span></a>
+      <a href="pagamento-seguro.html" data-close="" class="flex items-center justify-between py-2.5 border-b border-line"><span>Pagamento Seguro</span><span class="text-muted">›</span></a>
+      <a href="termos-uso.html" data-close="" class="flex items-center justify-between py-2.5 border-b border-line"><span>Termos de Uso</span><span class="text-muted">›</span></a>
+      <a href="trocas-reembolso.html" data-close="" class="flex items-center justify-between py-2.5"><span>Trocas e Reembolso</span><span class="text-muted">›</span></a>
       <p class="text-xs font-bold tracking-wider text-muted mt-5 mb-1">INSTITUCIONAL</p>
-      <a href="quem-somos.html" data-close="" class="flex items-center justify-between py-2.5 border-b border-line" id="d90d0585-7c89-36aa-9e72-fe43436dbc0c"><span>Quem Somos</span><span class="text-muted">›</span></a>
-      <a href="duvidas-frequentes.html" data-close="" class="flex items-center justify-between py-2.5 border-b border-line" id="b81ed392-999b-e578-92af-d5175638b617"><span>Dúvidas Frequentes</span><span class="text-muted">›</span></a>
-      <a href="politica-privacidade.html" data-close="" class="flex items-center justify-between py-2.5" id="be6175ce-a311-bc40-780b-aac6261cfb52"><span>Política de Privacidade</span><span class="text-muted">›</span></a>
+      <a href="quem-somos.html" data-close="" class="flex items-center justify-between py-2.5 border-b border-line"><span>Quem Somos</span><span class="text-muted">›</span></a>
+      <a href="duvidas-frequentes.html" data-close="" class="flex items-center justify-between py-2.5 border-b border-line"><span>Dúvidas Frequentes</span><span class="text-muted">›</span></a>
+      <a href="politica-privacidade.html" data-close="" class="flex items-center justify-between py-2.5"><span>Política de Privacidade</span><span class="text-muted">›</span></a>
     </div>
     <div class="border-t border-line bg-page px-6 py-4 text-sm">
       <p class="text-xs font-bold tracking-wider text-muted mb-2">ATENDIMENTO</p>
@@ -131,8 +141,8 @@
       <div id="mainImg" class="aspect-square rounded-2xl overflow-hidden bg-white border border-line"><img src="img/galeria-1.webp" alt="Plugmax" class="w-full h-full object-contain"></div>
       <span class="absolute top-3 left-3 bg-accent text-ink text-xs font-extrabold px-2.5 py-1 rounded-full shadow" id="badgeDesc">−50%</span>
       <span class="absolute top-3 right-3 bg-white/95 text-ink text-xs font-bold px-2.5 py-1 rounded-full shadow flex items-center gap-1"><span class="text-gold">★</span><span id="badgeNota">4.9</span></span>
-      <button data-gal="prev" aria-label="Imagem anterior" class="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-ink" id="b545ba02-4ab2-816c-d274-225140afe801">‹</button>
-      <button data-gal="next" aria-label="Próxima imagem" class="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-ink" id="bdfbf1d6-5044-2c73-d026-d8b26ae6bc22">›</button>
+      <button type="button" data-gal="prev" aria-label="Imagem anterior" class="gal-btn absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-ink">‹</button>
+      <button type="button" data-gal="next" aria-label="Próxima imagem" class="gal-btn absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white shadow flex items-center justify-center text-ink">›</button>
       <div id="dots" class="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5"></div>
     </div>
     <div id="thumbs" class="flex gap-2 mt-3 justify-center"></div>
@@ -154,12 +164,12 @@
 
       <div class="mt-3 pt-3 border-t border-line" id="precoBox"><span class="text-muted line-through text-sm">R$ 179,90</span><div class="flex items-end gap-2 mt-0.5"><span class="text-[34px] leading-none font-semibold">R$ 89,90</span><span class="text-ink bg-accent font-bold text-xs px-2 py-1 rounded-full mb-0.5">50% OFF</span></div><p class="text-sm mt-1"><span class="text-brand font-semibold">à vista no Pix</span> <span class="text-muted">· ou 5x de R$ 21,04</span></p></div>
 
-      <div class="mt-5" id="kitBox"><p class="text-xs font-bold tracking-wide text-muted mb-2">MONTE SEU KIT <span class="font-normal">· quanto mais, mais barato</span></p><div class="grid grid-cols-3 gap-2"><button type="button" data-tier="0" class="kitCard relative border-2 border-brand bg-brand/5 rounded-xl px-1.5 pt-4 pb-2.5 text-center" id="441602cf-8fe5-16fb-2130-339225e6bacd"><span class="var-radio absolute top-1.5 right-1.5 w-4 h-4 rounded-full border-2 border-brand bg-white flex items-center justify-center"><span class="var-dot w-2 h-2 rounded-full bg-brand "></span></span><div class="text-[11px] font-bold text-ink leading-tight">1 unidade</div><div class="font-extrabold text-lg leading-none mt-1.5">R$ 89,90</div><div class="text-[10px] text-muted leading-tight">cada</div><div class="text-[10px] text-muted mt-1 leading-tight">1 unidade</div></button><button type="button" data-tier="1" class="kitCard relative border-2 border-line rounded-xl px-1.5 pt-4 pb-2.5 text-center" id="43fc31a1-300c-365f-36f0-8dd60ac5ae03"><span class="var-radio absolute top-1.5 right-1.5 w-4 h-4 rounded-full border-2 border-line bg-white flex items-center justify-center"><span class="var-dot w-2 h-2 rounded-full bg-brand hidden"></span></span><div class="text-[11px] font-bold text-ink leading-tight">2 unidades</div><div class="font-extrabold text-lg leading-none mt-1.5">R$ 64,95</div><div class="text-[10px] text-muted leading-tight">cada</div><div class="text-[10px] text-muted mt-1 leading-tight">R$ 129,90 no total</div></button><button type="button" data-tier="2" class="kitCard relative border-2 border-line rounded-xl px-1.5 pt-4 pb-2.5 text-center" id="41bd9801-2a76-9d19-1569-08b38c3e8e88"><span class="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-brand text-white text-[9px] font-bold px-2 py-0.5 rounded-full">MAIS ESCOLHIDO</span><span class="var-radio absolute top-1.5 right-1.5 w-4 h-4 rounded-full border-2 border-line bg-white flex items-center justify-center"><span class="var-dot w-2 h-2 rounded-full bg-brand hidden"></span></span><div class="text-[11px] font-bold text-ink leading-tight">3 unidades</div><div class="font-extrabold text-lg leading-none mt-1.5">R$ 53,30</div><div class="text-[10px] text-muted leading-tight">cada</div><div class="text-[10px] text-muted mt-1 leading-tight">R$ 159,90 no total</div></button></div></div>
-      <div class="mt-4" id="unidadesBox"><p class="text-xs font-bold tracking-wide text-muted mb-2">ESCOLHA A COR</p><div class="grid grid-cols-2 gap-3"><button type="button" data-cor="Preto" class="corCard flex items-center gap-2 border-2 border-brand bg-brand/5 rounded-xl p-1.5 transition" id="ab45b3db-93ce-635d-6e55-ec9ea2e023b3"><img src="img/galeria-1.webp" alt="Tomada Preto" class="w-12 h-9 object-contain rounded border border-line bg-white shrink-0" loading="lazy"><span class="font-bold text-sm">Preto</span><span class="ml-auto w-5 h-5 rounded-full border-2 border-brand bg-brand flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" class="w-3 h-3" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"></path></svg></span></button><button type="button" data-cor="Branco" class="corCard flex items-center gap-2 border-2 border-line rounded-xl p-1.5 transition" id="3d6e2210-248e-cb03-d27b-401631e157ef"><img src="img/produto-branco.webp" alt="Tomada Branco" class="w-12 h-9 object-contain rounded border border-line bg-white shrink-0" loading="lazy"><span class="font-bold text-sm">Branco</span><span class="ml-auto w-5 h-5 rounded-full border-2 border-line bg-white flex items-center justify-center shrink-0"></span></button></div></div>
+      <div class="mt-5" id="kitBox"><p class="text-xs font-bold tracking-wide text-muted mb-2">MONTE SEU KIT <span class="font-normal">· quanto mais, mais barato</span></p><div class="grid grid-cols-3 gap-2"><button type="button" data-tier="0" class="kitCard relative border-2 border-brand bg-brand/5 rounded-xl px-1.5 pt-4 pb-2.5 text-center"><span class="var-radio absolute top-1.5 right-1.5 w-4 h-4 rounded-full border-2 border-brand bg-white flex items-center justify-center"><span class="var-dot w-2 h-2 rounded-full bg-brand "></span></span><div class="text-[11px] font-bold text-ink leading-tight">1 unidade</div><div class="font-extrabold text-lg leading-none mt-1.5">R$ 89,90</div><div class="text-[10px] text-muted leading-tight">cada</div><div class="text-[10px] text-muted mt-1 leading-tight">1 unidade</div></button><button type="button" data-tier="1" class="kitCard relative border-2 border-line rounded-xl px-1.5 pt-4 pb-2.5 text-center"><span class="var-radio absolute top-1.5 right-1.5 w-4 h-4 rounded-full border-2 border-line bg-white flex items-center justify-center"><span class="var-dot w-2 h-2 rounded-full bg-brand hidden"></span></span><div class="text-[11px] font-bold text-ink leading-tight">2 unidades</div><div class="font-extrabold text-lg leading-none mt-1.5">R$ 64,95</div><div class="text-[10px] text-muted leading-tight">cada</div><div class="text-[10px] text-muted mt-1 leading-tight">R$ 129,90 no total</div></button><button type="button" data-tier="2" class="kitCard relative border-2 border-line rounded-xl px-1.5 pt-4 pb-2.5 text-center"><span class="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-brand text-white text-[9px] font-bold px-2 py-0.5 rounded-full">MAIS ESCOLHIDO</span><span class="var-radio absolute top-1.5 right-1.5 w-4 h-4 rounded-full border-2 border-line bg-white flex items-center justify-center"><span class="var-dot w-2 h-2 rounded-full bg-brand hidden"></span></span><div class="text-[11px] font-bold text-ink leading-tight">3 unidades</div><div class="font-extrabold text-lg leading-none mt-1.5">R$ 53,30</div><div class="text-[10px] text-muted leading-tight">cada</div><div class="text-[10px] text-muted mt-1 leading-tight">R$ 159,90 no total</div></button></div></div>
+      <div class="mt-4" id="unidadesBox"><p class="text-xs font-bold tracking-wide text-muted mb-2">ESCOLHA A COR</p><div class="grid grid-cols-2 gap-3"><button type="button" data-cor="Preto" class="corCard flex items-center gap-2 border-2 border-brand bg-brand/5 rounded-xl p-1.5 transition"><img src="img/galeria-1.webp" alt="Tomada Preto" class="w-12 h-9 object-contain rounded border border-line bg-white shrink-0" loading="lazy"><span class="font-bold text-sm">Preto</span><span class="ml-auto w-5 h-5 rounded-full border-2 border-brand bg-brand flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" class="w-3 h-3" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"></path></svg></span></button><button type="button" data-cor="Branco" class="corCard flex items-center gap-2 border-2 border-line rounded-xl p-1.5 transition"><img src="img/produto-branco.webp" alt="Tomada Branco" class="w-12 h-9 object-contain rounded border border-line bg-white shrink-0" loading="lazy"><span class="font-bold text-sm">Branco</span><span class="ml-auto w-5 h-5 rounded-full border-2 border-line bg-white flex items-center justify-center shrink-0"></span></button></div></div>
 
       <div id="brindeBox"><div class="mt-3 flex items-center gap-2.5 bg-accent/10 border border-accent/40 rounded-xl p-2.5"><img src="img/brinde.webp" alt="brinde" class="w-11 h-11 rounded-lg object-cover shrink-0 bg-white"><p class="text-sm leading-tight"><span class="text-accentDk font-bold inline-flex items-center gap-1"><svg viewBox="0 0 24 24" class="ic w-4 h-4"><rect x="4" y="9.5" width="16" height="10.5" rx="1.5"></rect><path d="M3 9.5h18M12 9.5V20M12 9.5S10.6 5 8.3 5a2 2 0 0 0 0 4M12 9.5S13.4 5 15.7 5a2 2 0 0 1 0 4"></path></svg>Brinde grátis:</span> Chave de fenda para instalar <span class="text-muted">no pedido de hoje</span></p></div></div>
 
-      <button type="button" onclick="iniciarCheckout()" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-4 shadow-sm active:scale-[.99] transition" data-cta1="" id="e0afa4c5-b40e-aea8-1407-19c0d9ccca52">QUERO MINHA PLUGMAX</button>
+      <button type="button" onclick="iniciarCheckout(this)" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-4 shadow-sm active:scale-[.99] transition" data-cta1="">QUERO MINHA PLUGMAX</button>
       <p class="text-center text-xs text-muted mt-2 inline-flex items-center justify-center gap-1.5 w-full">
         <svg viewBox="0 0 24 24" class="ic w-3.5 h-3.5 text-accentDk"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg>
         Estoque baixo · oferta termina em <span class="font-bold text-accentDk" id="countdown">00:06:48</span>
@@ -185,7 +195,7 @@
     <div class="bg-white border border-line rounded-2xl p-4">
       <h2 class="text-lg font-bold mb-2" id="descTitulo">A tomada que acaba com a briga por ponto de energia</h2>
       <p class="text-muted text-[15px] leading-relaxed" id="descTexto">Chega de disputar a tomada e de procurar cabo pela casa. A Tomada Inteligente Plugmax junta numa peça só a tomada comum de 3 pinos, entradas USB e USB-C e dois cabos retráteis de 75cm — um Lightning e um Tipo-C — que ficam embutidos e recolhem sozinhos depois do uso. Com saída de carga rápida de 20W, ela troca a sua tomada antiga direto na caixa 4x2 embutida, deixa a parede limpa e organiza de vez a bagunça de carregadores. Disponível em preto e branco pra combinar com qualquer ambiente.</p>
-      <button type="button" onclick="iniciarCheckout()" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-4 shadow-sm active:scale-[.99] transition" data-cta1="" id="32732fb9-cb56-78ab-b3e9-a6b1fe6a91cb">QUERO MINHA PLUGMAX</button>
+      <button type="button" onclick="iniciarCheckout(this)" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-4 shadow-sm active:scale-[.99] transition" data-cta1="">QUERO MINHA PLUGMAX</button>
     </div>
   </section>
 
@@ -203,7 +213,7 @@
   </section>
 
   <!-- 9. CTA -->
-  <section class="px-4 pt-4"><button type="button" onclick="iniciarCheckout()" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta shadow-sm active:scale-[.99] transition" data-cta2="" id="721ad62a-b9be-1379-dbb8-c16a805bf18e">APROVEITAR 48% OFF</button></section>
+  <section class="px-4 pt-4"><button type="button" onclick="iniciarCheckout(this)" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta shadow-sm active:scale-[.99] transition" data-cta2="">APROVEITAR 48% OFF</button></section>
 
   <!-- 10. INFOGRÁFICOS -->
   <section class="px-4 pt-6">
@@ -245,7 +255,7 @@
         Oferta termina em <span class="font-bold text-accentDk" id="countdown2">00:06:48</span>
       </p>
       <p class="text-xs text-muted mt-0.5" id="precoOferta">R$ <span class="line-through">179,90</span> → <b class="text-ink text-lg">R$ 89,90</b> à vista no Pix</p>
-      <button type="button" onclick="iniciarCheckout()" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-3 shadow-sm active:scale-[.99] transition" data-cta2="" id="b77bb8c0-5dcd-2f78-832e-4d7d96cd1d20">APROVEITAR 48% OFF</button>
+      <button type="button" onclick="iniciarCheckout(this)" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-3 shadow-sm active:scale-[.99] transition" data-cta2="">APROVEITAR 48% OFF</button>
     </div>
   </section>
 
@@ -279,7 +289,7 @@
     <div class="marquee mt-4 -mx-4 overflow-hidden"><div id="avaliacoesTrack" class="marquee-track flex gap-3 w-max px-4" style="animation-duration: 20s;"><img src="img/avaliacao-1.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-2.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-3.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-4.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-5.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-6.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-7.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-8.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-1.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-2.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-3.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-4.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-5.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-6.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-7.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-8.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"></div></div>
     <div class="space-y-3 mt-4" id="depoimentosBox"><article class="bg-white border border-line rounded-xl p-4"><div class="flex items-center gap-2"><div class="w-10 h-10 rounded-full bg-page flex items-center justify-center font-bold">C</div><div><p class="font-bold text-sm flex items-center gap-1">Camila R. <span class="text-brand text-xs inline-flex items-center gap-0.5"><svg viewBox="0 0 24 24" class="ic w-3.5 h-3.5"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 12l2.5 2.5L16 9"></path></svg>Verificado</span></p><p class="text-xs text-muted">Belo Horizonte/MG</p></div></div><p class="text-sm mt-2"><span class="text-gold">★★★★★</span></p><p class="text-sm text-muted mt-1">"Instalei no quarto e acabou a bagunça de cabo na cabeceira. Ficou lindo e é super prático."</p></article><article class="bg-white border border-line rounded-xl p-4"><div class="flex items-center gap-2"><div class="w-10 h-10 rounded-full bg-page flex items-center justify-center font-bold">R</div><div><p class="font-bold text-sm flex items-center gap-1">Rodrigo M. <span class="text-brand text-xs inline-flex items-center gap-0.5"><svg viewBox="0 0 24 24" class="ic w-3.5 h-3.5"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 12l2.5 2.5L16 9"></path></svg>Verificado</span></p><p class="text-xs text-muted">Curitiba/PR</p></div></div><p class="text-sm mt-2"><span class="text-gold">★★★★★</span></p><p class="text-sm text-muted mt-1">"Chamei um eletricista pra colocar e foi rápido. Carrega o celular numa boa e o design é discreto."</p></article><article class="bg-white border border-line rounded-xl p-4"><div class="flex items-center gap-2"><div class="w-10 h-10 rounded-full bg-page flex items-center justify-center font-bold">A</div><div><p class="font-bold text-sm flex items-center gap-1">Aline S. <span class="text-brand text-xs inline-flex items-center gap-0.5"><svg viewBox="0 0 24 24" class="ic w-3.5 h-3.5"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 12l2.5 2.5L16 9"></path></svg>Verificado</span></p><p class="text-xs text-muted">Recife/PE</p></div></div><p class="text-sm mt-2"><span class="text-gold">★★★★</span><span class="text-line">★</span></p><p class="text-sm text-muted mt-1">"Muito boa, os cabos retráteis salvam. Só achei que ia ser um pouco maior, mas coube certinho na caixa."</p></article><article class="bg-white border border-line rounded-xl p-4"><div class="flex items-center gap-2"><div class="w-10 h-10 rounded-full bg-page flex items-center justify-center font-bold">M</div><div><p class="font-bold text-sm flex items-center gap-1">Marcos T. <span class="text-brand text-xs inline-flex items-center gap-0.5"><svg viewBox="0 0 24 24" class="ic w-3.5 h-3.5"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 12l2.5 2.5L16 9"></path></svg>Verificado</span></p><p class="text-xs text-muted">Campinas/SP</p></div></div><p class="text-sm mt-2"><span class="text-gold">★★★★★</span></p><p class="text-sm text-muted mt-1">"Comprei duas, uma pra sala e outra pro escritório. USB, USB-C e ainda a tomada normal, resolve tudo."</p></article><article class="bg-white border border-line rounded-xl p-4"><div class="flex items-center gap-2"><div class="w-10 h-10 rounded-full bg-page flex items-center justify-center font-bold">J</div><div><p class="font-bold text-sm flex items-center gap-1">Juliana F. <span class="text-brand text-xs inline-flex items-center gap-0.5"><svg viewBox="0 0 24 24" class="ic w-3.5 h-3.5"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 12l2.5 2.5L16 9"></path></svg>Verificado</span></p><p class="text-xs text-muted">Porto Alegre/RS</p></div></div><p class="text-sm mt-2"><span class="text-gold">★★★★★</span></p><p class="text-sm text-muted mt-1">"Peguei a branca e combinou com a parede. Parou a briga por tomada aqui em casa."</p></article></div>
     <p class="text-center text-brand font-semibold text-sm mt-4" id="verTodas">Ver todas as 2.107 avaliações →</p>
-    <button type="button" onclick="iniciarCheckout()" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-4 shadow-sm active:scale-[.99] transition" data-cta3="" id="4fbf46b3-842f-1675-8725-0da5f3f25a74">COMPRAR COM SEGURANÇA</button>
+    <button type="button" onclick="iniciarCheckout(this)" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-4 shadow-sm active:scale-[.99] transition" data-cta3="">COMPRAR COM SEGURANÇA</button>
   </section>
 
   <!-- 16. FAQ -->
@@ -339,7 +349,7 @@
 <div id="stickyBar" class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-line transition-transform">
   <div class="max-w-[480px] mx-auto flex items-center gap-3 px-4 py-3">
     <div class="shrink-0 leading-tight"><div class="text-xs text-muted line-through" id="stickyDe">R$ 179,90</div><div class="text-xl font-extrabold whitespace-nowrap" id="stickyPor">R$ 89,90</div></div>
-    <button type="button" onclick="iniciarCheckout()" class="flex-1 bg-buy text-white font-bold py-3 rounded-cta whitespace-nowrap active:scale-[.99] transition" data-cta4="" id="13ac4e47-86fa-ad76-9bba-b58a09f30ee0">QUERO A MINHA</button>
+    <button type="button" onclick="iniciarCheckout(this)" class="flex-1 bg-buy text-white font-bold py-3 rounded-cta whitespace-nowrap active:scale-[.99] transition" data-cta4="">QUERO A MINHA</button>
   </div>
 </div>
 
@@ -367,19 +377,15 @@ const PRODUTO = {
   garantiaMeses: '90 dias',
 
   // ===== KIT (promoção por quantidade + cor por unidade) =====
-  // Cada unidade do kit escolhe a COR (é bivolt, sem seletor de voltagem).
-  // [ATENCAO] PRECOS SUGERIDOS — ajuste os números. 'padrao:true' = tier já selecionado.
-  //    'de' = preço-âncora riscado · 'por' = preço do kit · 'un_por' = por unidade.
+  // 'padrao:true' marca o tier inicialmente selecionado.
+  // 'de' = preço-âncora riscado · 'por' = preço do kit · 'un_por' = preço por unidade.
   kit: {
     cor: { opcoes: ['Preto','Branco'], cores: { 'Preto':'#2B2B2D', 'Branco':'#FFFFFF' },
            img: { 'Preto':'galeria-1.webp', 'Branco':'produto-branco.webp' } },
-    // Psicologia de preço: o que o cliente compara é o PREÇO POR UNIDADE (un_por).
-    // 1un é caro por unidade de propósito; cada unidade a mais derruba o /un → o de 3 vence.
     tiers: [
-      // parcelas: cartão tem 17% de acréscimo sobre o valor à vista (5x).
-      // Ex.: 89,90 × 1,17 = 105,18 → 5x de 21,04. O valor da parcela aqui já é
-      // o COM juros — nunca use por/5, senão anuncia parcela que não existe.
-      // O total e a regra dos 17% ficam detalhados em pagamento-seguro.html.
+      // Parcelas: cartão tem 17% de acréscimo sobre o valor à vista (5x).
+      // Ex.: 89,90 × 1,17 = 105,18 → 5x de 21,04. O valor da parcela já é o COM
+      // juros — nunca use por/5, senão anuncia uma parcela que não existe.
       { un:1, de:'R$ 179,90', por:'R$ 89,90',  un_por:'R$ 89,90', total:'R$ 89,90',  parcelas:'5x de R$ 21,04', desconto:'50% OFF', selo:null,              padrao:true },
       { un:2, de:'R$ 359,80', por:'R$ 129,90', un_por:'R$ 64,95', total:'R$ 129,90', parcelas:'5x de R$ 30,40', desconto:'64% OFF', selo:null },
       { un:3, de:'R$ 539,70', por:'R$ 159,90', un_por:'R$ 53,30', total:'R$ 159,90', parcelas:'5x de R$ 37,42', desconto:'70% OFF', selo:'MAIS ESCOLHIDO' },
@@ -393,7 +399,7 @@ const PRODUTO = {
   ctaProva: 'COMPRAR COM SEGURANÇA',
   ctaSticky: 'QUERO A MINHA',
 
-  // 2 fotos reais do anúncio + 3 geradas (ver PROMPTS-IMAGENS-V2.md). Só preto e branco.
+  // Galeria do produto (preto e branco).
   galeria: ['galeria-1.webp','produto-instalada.webp','produto-detalhe.webp','produto-branco.webp','produto-cabos.webp'],
 
   beneficios: [
@@ -486,7 +492,7 @@ const PRODUTO = {
     { i:'M', nome:'Marcos T.', local:'Campinas/SP', estrelas:5, foto:'Marcos T.jpg', texto:'Comprei duas, uma pra sala e outra pro escritório. USB, USB-C e ainda a tomada normal, resolve tudo.' },
     { i:'J', nome:'Juliana F.', local:'Porto Alegre/RS', estrelas:5, foto:'Juliana F.jpg', texto:'Peguei a branca e combinou com a parede. Parou a briga por tomada aqui em casa.' },
   ],
-  qtdAvaliacoesImagens: 8,   // fotos reais de cliente, só preto/branco (origem: plugmax/avaliacao/)
+  qtdAvaliacoesImagens: 8,   // fotos reais de clientes, preto e branco
 
   faq: [
     { q:'Serve na minha parede?', a:'Sim. Foi feita pra caixa 4x2 embutida, a mais comum no Brasil.' },
@@ -659,16 +665,14 @@ $('#depoimentosBox').innerHTML = P.depoimentos.map(d =>
 $('#faqBox').innerHTML = P.faq.map(f =>
   '<details><summary class="flex justify-between items-center px-4 py-3 font-semibold text-sm">'+f.q+' <span class="chev transition">⌄</span></summary><div class="px-4 pb-4 text-sm text-muted">'+f.a+'</div></details>').join('');
 
-/* ===== CHECKOUT — ligado ao backend Zedy (POST /api/checkout).
-   A function mapeia (cor + unidades) -> variantId da Zedy e devolve o checkoutUrl.
-   NUNCA mandamos preço: quem define valor é o painel da Zedy, então não há como
-   adulterar o total pelo devtools.
-   Para desligar os botões de novo, mude CHECKOUT_ATIVO para false. ===== */
+/* ===== CHECKOUT — inicia o pagamento (POST /api/checkout).
+   O preço é definido no servidor e o token do pedido é assinado, então não há
+   como adulterar o total pelo navegador.
+   Para desligar os botões novamente, mude CHECKOUT_ATIVO para false. ===== */
 const CHECKOUT_ATIVO = true;
 
-/* A Zedy captura as UTMs da URL do checkout e repassa na venda. Como o redirect
-   é via JS (não é <a>), nada decora esse link sozinho — anexamos aqui as UTMs
-   da URL atual. */
+/* As UTMs da URL atual são preservadas e anexadas ao link do checkout (o
+   redirect é via JS, não por <a>, então anexamos manualmente aqui). */
 function anexarUtms(url){
   try {
     const atual = new URLSearchParams(location.search);
@@ -681,26 +685,78 @@ function anexarUtms(url){
   } catch (e) { return url; }
 }
 
-async function iniciarCheckout(){
+async function iniciarCheckout(btn){
   if (!CHECKOUT_ATIVO) return;
   if (window.__checkoutBusy) return;   // trava duplo-clique / múltiplos botões
   window.__checkoutBusy = true;
-  try {
-    const resp = await fetch('/api/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cor: corKit, unidades: KIT.tiers[tierIdx].un })
-    });
-    const data = await resp.json().catch(() => ({}));
-    if (resp.ok && data && data.checkoutUrl) {
-      window.location.href = anexarUtms(data.checkoutUrl);
-      return;
-    }
-    alert('Não foi possível iniciar o pagamento agora. Tente novamente em instantes.');
-  } catch (e) {
-    alert('Não foi possível iniciar o pagamento agora. Tente novamente em instantes.');
-  } finally {
+
+  const b = btn && btn.tagName === 'BUTTON' ? btn : null;
+  const htmlOriginal = b ? b.innerHTML : null;
+
+  const trava = () => {
+    if (!b) return;
+    b.disabled = true;
+    b.classList.add('cursor-wait','opacity-80');
+    b.innerHTML =
+      '<span class="inline-flex items-center justify-center gap-2">' +
+      '<svg class="spin-fwd w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+      '<circle class="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>' +
+      '<path fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"></path></svg>' +
+      'Preparando sua compra…</span>';
+  };
+
+  const solta = () => {
     window.__checkoutBusy = false;
+    if (!b) return;
+    b.disabled = false;
+    b.classList.remove('cursor-wait','opacity-80');
+    if (htmlOriginal != null) b.innerHTML = htmlOriginal;
+  };
+
+  trava();
+
+  /* garantia: rede lenta/job pendurado não pode deixar o botão travado pra sempre */
+  let caiu = false;
+  const desarme = setTimeout(() => {
+    if (caiu) return;
+    caiu = true;
+    solta();
+    alert('Conexão lenta. Toque em Comprar novamente, por favor.');
+  }, 15000);
+
+  try {
+    let tentativas = 0;
+    while (tentativas < 2) {   // 1 retry automático em falha transitória
+      tentativas++;
+      try {
+        const resp = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cor: corKit, unidades: KIT.tiers[tierIdx].un }),
+          cache: 'no-store'
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (resp.ok && data && data.checkoutUrl) {
+          clearTimeout(desarme);
+          window.location.assign(anexarUtms(data.checkoutUrl));
+          return;
+        }
+      } catch (e) { /* falha transitória: tenta de novo abaixo */ }
+      if (tentativas < 2) await new Promise(r => setTimeout(r, 700));
+    }
+    if (!caiu) {
+      caiu = true;
+      clearTimeout(desarme);
+      solta();
+      alert('Não foi possível iniciar o pagamento agora. Tente novamente em instantes.');
+    }
+  } catch (e) {
+    if (!caiu) {
+      caiu = true;
+      clearTimeout(desarme);
+      solta();
+      alert('Não foi possível iniciar o pagamento agora. Tente novamente em instantes.');
+    }
   }
 }
 
@@ -723,10 +779,16 @@ const mainImg=document.getElementById('mainImg'), thumbs=document.getElementById
 let cur=0;
 function render(){
   mainImg.innerHTML='<img src="'+GAL[cur]+'" alt="'+P.marca+'" class="w-full h-full object-contain">';
-  [...dots.children].forEach((d,i)=> d.className='w-2 h-2 rounded-full '+(i===cur?'bg-brand':'bg-line'));
-  [...thumbs.children].forEach((t,i)=> t.className='w-12 h-12 shrink-0 aspect-square rounded-lg object-cover cursor-pointer border '+(i===cur?'border-2 border-brand':'border-line'));
+  [...dots.children].forEach((d,i)=>{ d.className='gal-dot'; const dot=d.querySelector('span'); if(dot) dot.className='w-2 h-2 rounded-full '+(i===cur?'bg-brand':'bg-line'); });
+  [...thumbs.children].forEach((tb,i)=>{ const t=tb.querySelector('img'); if(t) t.className='w-12 h-12 shrink-0 aspect-square rounded-lg object-cover cursor-pointer border '+(i===cur?'border-2 border-brand':'border-line'); });
 }
-GAL.forEach((src,i)=>{ const d=document.createElement('button'); d.setAttribute('aria-label','Imagem '+(i+1)); dots.appendChild(d); const t=document.createElement('img'); t.src=src; t.alt='miniatura '+(i+1); t.loading='lazy'; t.addEventListener('click',()=>{cur=i;render();}); thumbs.appendChild(t); });
+GAL.forEach((src,i)=>{
+  const d=document.createElement('button'); d.className='gal-dot'; d.setAttribute('type','button'); d.setAttribute('aria-label','Imagem '+(i+1));
+  const dot=document.createElement('span'); dot.className='w-2 h-2 rounded-full '+(i===cur?'bg-brand':'bg-line'); d.appendChild(dot); dots.appendChild(d);
+  const tBtn=document.createElement('button'); tBtn.className='p-0 border-0 bg-transparent cursor-pointer block shrink-0'; tBtn.setAttribute('type','button'); tBtn.setAttribute('aria-label','Ver imagem '+(i+1));
+  const t=document.createElement('img'); t.src=src; t.alt='miniatura '+(i+1); t.loading='lazy'; tBtn.appendChild(t);
+  tBtn.addEventListener('click',()=>{cur=i;render();}); thumbs.appendChild(tBtn);
+});
 document.querySelector('[data-gal="prev"]').onclick=()=>{cur=(cur-1+GAL.length)%GAL.length;render();};
 document.querySelector('[data-gal="next"]').onclick=()=>{cur=(cur+1)%GAL.length;render();};
 render();
@@ -744,8 +806,9 @@ setInterval(()=>{ if(total<=0) return; total--; const m=String(Math.floor((total
 const bar=document.getElementById('stickyBar');
 window.addEventListener('scroll',()=>{ if(window.scrollY>600) bar.classList.remove('translate-y-full'); else bar.classList.add('translate-y-full'); });
 
-/* garante topo ao voltar/navegar (bfcache) */
-window.addEventListener('pageshow', function(e) { window.scrollTo(0, 0); });
+/* garante topo imediato ao voltar/navegar (bfcache) — instant, sem suavizar,
+   evitando a sensação de "deriva" que o scroll-behavior:smooth causa aqui */
+window.addEventListener('pageshow', function(e) { window.scrollTo({ top: 0, behavior: 'instant' }); });
 </script>
 
 

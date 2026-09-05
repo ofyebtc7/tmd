@@ -1,0 +1,758 @@
+Você vai atuar como um **Senior Front-End Engineer + UI/UX Engineer + Responsive Web Specialist**, com experiência avançada em **Next.js, React, TypeScript/JavaScript, HTML5, CSS, Tailwind, mobile browsers, touch interactions, viewport, responsive design e performance de interfaces**.
+
+Sua missão é fazer uma **auditoria técnica completa da responsividade e das interações do site**, principalmente no MOBILE, mas também garantindo que DESKTOP e TABLET permaneçam excelentes.
+
+## OBJETIVO
+
+O site atualmente apresenta problemas de interação e responsividade, principalmente em dispositivos móveis:
+
+* alguns botões estão demorando para responder ao clique/toque;
+* o botão/área lateral da página inicial está provocando zoom;
+* em algumas áreas, ao tocar duas vezes ou interagir rapidamente, ocorre zoom inesperado;
+* a página está permitindo movimentação lateral/horizontal;
+* ao tocar e arrastar com o dedo, a tela parece "solta", podendo deslocar horizontalmente;
+* alguns elementos aparentam não estar respeitando corretamente a largura da viewport;
+* existem comportamentos inconsistentes de toque;
+* a experiência precisa ficar mais fluida e profissional.
+
+Quero corrigir isso de maneira **estrutural e profissional**, e NÃO através de gambiarras.
+
+---
+
+# REGRA PRINCIPAL
+
+**NÃO altere o design do site sem necessidade.**
+
+Preserve:
+
+* identidade visual;
+* cores;
+* fontes;
+* espaçamentos que já estejam corretos;
+* layout;
+* componentes;
+* textos;
+* imagens;
+* funcionalidades;
+* estrutura comercial;
+* navegação.
+
+A prioridade é corrigir:
+
+> **RESPONSIVIDADE + TOUCH + CLIQUES + ZOOM INDESEJADO + OVERFLOW + ESTABILIDADE DA VIEWPORT + PERFORMANCE DE INTERAÇÃO**
+
+---
+
+# ETAPA 1 — AUDITORIA ANTES DE ALTERAR
+
+Primeiro analise todo o projeto.
+
+Não comece simplesmente adicionando:
+
+`overflow-x: hidden`
+
+sem descobrir a causa.
+
+Procure tecnicamente a origem dos problemas.
+
+Analise:
+
+* `html`
+* `body`
+* `#__next`
+* containers principais
+* layouts
+* páginas
+* componentes
+* headers
+* menus
+* botões
+* cards
+* carrosséis
+* banners
+* modais
+* drawers
+* elementos fixos
+* elementos absolutos
+* elementos sticky
+* imagens
+* vídeos
+* iframes
+* tabelas
+* formulários
+* inputs
+* selects
+* links
+* elementos interativos
+
+Procure principalmente:
+
+* `width: 100vw`
+* `min-width`
+* `max-width`
+* `width` fixo
+* margens negativas
+* `transform`
+* `translate`
+* `position: absolute`
+* `position: fixed`
+* elementos maiores que o viewport
+* imagens sem `max-width`
+* textos que não quebram
+* `white-space: nowrap`
+* containers com largura fixa
+* `flex` sem controle de shrink
+* grids que ultrapassam a viewport
+* carrosséis
+* sliders
+* elementos com `left/right`
+* sombras ou transforms causando overflow
+* componentes que possuem largura superior à tela
+* barras laterais
+* elementos escondidos que continuam ocupando espaço
+* elementos que causam scroll horizontal.
+
+---
+
+# ETAPA 2 — ELIMINAR O SCROLL HORIZONTAL
+
+O site precisa permanecer visualmente estável dentro da largura da tela.
+
+Quando estiver em:
+
+* 320px
+* 360px
+* 375px
+* 390px
+* 393px
+* 412px
+* 430px
+* tablets
+* desktop
+
+não pode existir movimento horizontal acidental.
+
+IMPORTANTE:
+
+Não quero simplesmente esconder o problema com:
+
+`overflow-x: hidden`
+
+Primeiro encontre qual elemento está ultrapassando a viewport.
+
+Identifique a origem.
+
+Depois corrija o elemento responsável.
+
+Somente utilize proteção global contra overflow quando ela fizer sentido arquiteturalmente e sem mascarar bugs.
+
+---
+
+# ETAPA 3 — MOBILE VIEWPORT
+
+Audite cuidadosamente a configuração de viewport.
+
+Verifique:
+
+* `<meta name="viewport">`
+* configuração do Next.js;
+* viewport dinâmica;
+* comportamento em Safari iOS;
+* Chrome Android;
+* barras de navegação;
+* `100vh`;
+* `100dvh`;
+* `100svh`;
+* `100lvh`.
+
+Evite soluções antigas que causam comportamento estranho em celulares.
+
+Quando apropriado, utilize unidades modernas como:
+
+`dvh`
+
+para áreas que realmente precisam acompanhar a viewport dinâmica.
+
+---
+
+# ETAPA 4 — ZOOM INESPERADO
+
+Existe um problema específico:
+
+Ao tocar em determinadas áreas, especialmente na lateral da página inicial, ocorre zoom.
+
+Também existe comportamento de zoom associado a dois toques ou interações rápidas.
+
+Faça uma investigação profunda.
+
+Verifique:
+
+* elementos interativos muito pequenos;
+* inputs;
+* font-size de inputs;
+* double tap;
+* touch-action;
+* gestos;
+* links;
+* botões;
+* overlays;
+* elementos sobrepostos;
+* áreas transparentes;
+* elementos com `pointer-events`;
+* eventos `touchstart`;
+* eventos `touchend`;
+* eventos `click`;
+* listeners duplicados;
+* handlers de mouse aplicados ao mobile;
+* bibliotecas de carrossel/slider;
+* gestos implementados manualmente.
+
+### IMPORTANTE
+
+Não desabilite zoom de acessibilidade indiscriminadamente.
+
+Não utilize uma solução que prejudique usuários que precisam ampliar a interface.
+
+A prioridade é eliminar o **zoom acidental causado pela implementação**, e não impedir recursos legítimos de acessibilidade.
+
+---
+
+# ETAPA 5 — DOUBLE TAP
+
+Investigue especificamente se existe algum componente interpretando:
+
+`double click`
+
+ou
+
+`double tap`
+
+de maneira inadequada.
+
+Procure:
+
+* `dblclick`
+* `touchstart`
+* `touchend`
+* `touchmove`
+* `gesture`
+* listeners customizados
+* bibliotecas de swipe
+* carrosséis
+* componentes de imagem
+* componentes de zoom.
+
+Se houver implementação desnecessária de eventos touch, simplifique.
+
+Evite implementar manualmente comportamentos que o navegador já trata corretamente.
+
+---
+
+# ETAPA 6 — BOTÕES E CLIQUES LENTOS
+
+Alguns botões estão apresentando atraso na resposta.
+
+Audite todos os elementos interativos.
+
+Verifique:
+
+* handlers pesados;
+* funções executadas no clique;
+* chamadas síncronas;
+* renders desnecessários;
+* componentes excessivamente pesados;
+* listeners duplicados;
+* debounce incorreto;
+* throttle incorreto;
+* delays artificiais;
+* animações longas;
+* transições exageradas;
+* overlays bloqueando eventos;
+* `pointer-events`;
+* elementos invisíveis sobre os botões;
+* z-index;
+* propagação de eventos;
+* `preventDefault`;
+* `stopPropagation`;
+* scripts globais interferindo no clique.
+
+Quero que o feedback visual do clique/toque seja rápido.
+
+O usuário deve sentir que:
+
+> tocou → botão respondeu imediatamente.
+
+Se houver operação assíncrona, o botão pode continuar processando depois do feedback inicial, mas não deve parecer travado.
+
+---
+
+# ETAPA 7 — TOUCH ACTION
+
+Audite o uso de:
+
+`touch-action`
+
+Não aplique:
+
+`touch-action: none`
+
+globalmente.
+
+Isso pode prejudicar:
+
+* scroll;
+* acessibilidade;
+* gestos;
+* navegação;
+* comportamento natural do navegador.
+
+Use `touch-action` apenas onde houver uma necessidade real, por exemplo em componentes específicos que possuem gestos próprios.
+
+---
+
+# ETAPA 8 — SCROLL NATURAL
+
+O usuário precisa conseguir:
+
+* tocar;
+* arrastar;
+* rolar;
+* navegar;
+
+sem sentir que a página está "solta".
+
+A página não deve permitir deslocamento horizontal acidental.
+
+Mas o scroll vertical precisa continuar:
+
+* suave;
+* natural;
+* responsivo;
+* compatível com iOS;
+* compatível com Android.
+
+Não quero bloquear o scroll do documento.
+
+---
+
+# ETAPA 9 — ELEMENTOS LATERAIS
+
+Existe um problema específico na página inicial relacionado a uma área/botão lateral.
+
+Faça uma investigação individual nessa região.
+
+Verifique:
+
+* largura;
+* posição;
+* `fixed`;
+* `absolute`;
+* `right`;
+* `left`;
+* `transform`;
+* z-index;
+* área clicável;
+* elemento invisível;
+* overlay;
+* touch events;
+* overflow;
+* escala;
+* animação;
+* responsividade.
+
+Teste o componente em várias larguras.
+
+Ele não pode:
+
+* gerar zoom;
+* empurrar a página;
+* criar scroll horizontal;
+* sair da viewport;
+* ficar parcialmente inacessível;
+* interceptar toque de outras áreas.
+
+---
+
+# ETAPA 10 — ÁREAS CLICÁVEIS
+
+Revise todos os botões e links.
+
+Garanta áreas de toque adequadas para mobile.
+
+Não quero botões minúsculos ou elementos difíceis de tocar.
+
+Mantenha o design atual, mas aumente a área interativa quando necessário sem deformar visualmente o componente.
+
+Também verifique se elementos estão sobrepostos.
+
+Um elemento transparente ou invisível não deve capturar o toque por acidente.
+
+---
+
+# ETAPA 11 — IMAGENS E CONTEÚDO
+
+Audite todas as imagens.
+
+Procure:
+
+* imagens sem dimensões;
+* imagens maiores que o container;
+* `width` fixo;
+* `height` fixo inadequado;
+* imagens sem `max-width`;
+* SVGs grandes;
+* SVGs com dimensões incorretas;
+* elementos que causam overflow.
+
+Verifique também:
+
+* vídeos;
+* iframes;
+* mapas;
+* embeds;
+* banners.
+
+Nada deve ultrapassar a largura da viewport sem uma razão explícita.
+
+---
+
+# ETAPA 12 — TIPOGRAFIA
+
+Verifique se textos estão causando overflow.
+
+Procure:
+
+* palavras gigantes;
+* números;
+* preços;
+* códigos;
+* URLs;
+* títulos;
+* botões;
+* textos em `nowrap`.
+
+Corrija de maneira elegante.
+
+Não reduza fontes indiscriminadamente.
+
+A tipografia deve continuar visualmente premium e legível.
+
+---
+
+# ETAPA 13 — RESPONSIVIDADE REAL
+
+Não quero uma solução feita somente para um celular específico.
+
+Teste mentalmente/tecnicamente os seguintes cenários:
+
+### MOBILE PEQUENO
+
+320px
+
+### MOBILE
+
+360px
+
+### MOBILE
+
+375px
+
+### MOBILE
+
+390px
+
+### MOBILE
+
+412px
+
+### MOBILE GRANDE
+
+430px+
+
+### TABLET
+
+768px+
+
+### DESKTOP
+
+1024px+
+
+### DESKTOP GRANDE
+
+1280px+
+
+### TELAS GRANDES
+
+1440px / 1920px+
+
+A interface deve se adaptar sem:
+
+* overflow;
+* zoom;
+* elementos cortados;
+* botões inacessíveis;
+* espaçamentos quebrados;
+* sobreposição;
+* conteúdo saindo da tela.
+
+---
+
+# ETAPA 14 — DESKTOP
+
+Mesmo que o problema tenha sido identificado primeiro no mobile, faça uma auditoria também no desktop.
+
+Verifique:
+
+* mouse click;
+* hover;
+* foco;
+* keyboard navigation;
+* dropdowns;
+* menus;
+* botões;
+* links;
+* modais;
+* sliders;
+* navegação;
+* responsividade ao redimensionar a janela.
+
+O mesmo componente não pode funcionar bem no mobile e quebrar no desktop.
+
+---
+
+# ETAPA 15 — ACESSIBILIDADE
+
+Sem alterar o design, verifique:
+
+* foco por teclado;
+* elementos `<button>`;
+* elementos `<a>`;
+* `aria-label`;
+* contraste;
+* tamanho das áreas interativas;
+* navegação por teclado;
+* foco visível.
+
+Não transforme `<div>` em botão apenas visualmente.
+
+Utilize elementos semânticos adequados.
+
+---
+
+# ETAPA 16 — PERFORMANCE DE INTERAÇÃO
+
+Analise se existem:
+
+* renders excessivos;
+* componentes client-side desnecessários;
+* JavaScript pesado;
+* listeners globais;
+* eventos touch duplicados;
+* animações custosas;
+* funções executadas durante `touchmove`;
+* listeners não removidos;
+* efeitos React executados repetidamente.
+
+Especialmente:
+
+`touchmove`
+
+não deve executar operações pesadas continuamente.
+
+Evite causar:
+
+* lag;
+* travamentos;
+* atraso no toque;
+* scroll engasgando.
+
+---
+
+# ETAPA 17 — CSS LIMPO
+
+Procure regras conflitantes.
+
+Principalmente:
+
+* media queries duplicadas;
+* estilos mobile sobrescritos;
+* `!important` excessivo;
+* regras globais perigosas;
+* CSS duplicado;
+* estilos antigos;
+* hacks;
+* valores arbitrários;
+* breakpoints conflitantes.
+
+Faça uma limpeza somente quando necessária para resolver o problema.
+
+Não refatore o CSS inteiro sem necessidade.
+
+---
+
+# ETAPA 18 — CORREÇÃO
+
+Depois da auditoria:
+
+1. Identifique a causa.
+2. Corrija a causa.
+3. Teste o componente afetado.
+4. Verifique o restante do site.
+5. Verifique mobile.
+6. Verifique tablet.
+7. Verifique desktop.
+8. Verifique redimensionamento.
+
+Não aplique soluções genéricas antes de entender a origem.
+
+---
+
+# ETAPA 19 — REGRA DE NÃO QUEBRAR
+
+Durante todo o processo:
+
+NÃO altere:
+
+* banco de dados;
+* APIs sem necessidade;
+* regras comerciais;
+* checkout;
+* pagamentos;
+* autenticação;
+* textos;
+* identidade visual;
+* estrutura de negócio.
+
+Se uma correção de responsividade exigir alteração estrutural importante, primeiro explique o motivo.
+
+---
+
+# ETAPA 20 — TESTE FINAL
+
+Ao terminar, faça uma auditoria final procurando especificamente:
+
+### MOBILE
+
+☑ Não existe scroll horizontal acidental.
+
+☑ A página não se move lateralmente ao arrastar o dedo.
+
+☑ Não ocorre zoom acidental.
+
+☑ Double tap não provoca comportamento estranho.
+
+☑ Botões respondem rapidamente.
+
+☑ Menus respondem rapidamente.
+
+☑ Links funcionam.
+
+☑ Elementos laterais permanecem dentro da viewport.
+
+☑ Inputs não provocam zoom inesperado por configuração inadequada.
+
+☑ Nenhum elemento ultrapassa a tela.
+
+☑ Scroll vertical permanece natural.
+
+☑ Não existem elementos invisíveis bloqueando cliques.
+
+☑ Não existem overlays indevidos.
+
+### DESKTOP
+
+☑ Mouse click funcionando.
+
+☑ Hover funcionando.
+
+☑ Teclado funcionando.
+
+☑ Menu funcionando.
+
+☑ Botões funcionando.
+
+☑ Nenhum overflow horizontal.
+
+☑ Layout permanece correto.
+
+### TABLET
+
+☑ Layout intermediário funcionando.
+
+☑ Sem elementos quebrados.
+
+☑ Sem overflow.
+
+---
+
+# RELATÓRIO FINAL
+
+Quando terminar, apresente:
+
+## 1. PROBLEMAS ENCONTRADOS
+
+Lista dos problemas encontrados.
+
+## 2. CAUSA
+
+Explique tecnicamente a origem de cada problema.
+
+## 3. CORREÇÕES
+
+Informe:
+
+* arquivo;
+* componente;
+* alteração realizada;
+* motivo.
+
+## 4. IMPACTO
+
+Confirme se:
+
+* design foi preservado;
+* funcionalidades foram preservadas;
+* mobile foi corrigido;
+* desktop foi preservado;
+* tablet foi considerado.
+
+## 5. RESULTADO
+
+Dê uma avaliação final:
+
+* Responsividade
+* Touch
+* Cliques
+* Scroll
+* Zoom
+* Performance
+* Desktop
+* Mobile
+
+---
+
+# PRINCÍPIO FINAL
+
+Quero uma implementação com padrão de **produto profissional em produção**.
+
+Não quero:
+
+"funciona no meu celular".
+
+Quero:
+
+> **uma interface responsiva, estável, rápida e consistente em diferentes tamanhos de tela e diferentes métodos de interação.**
+
+Não faça gambiarras para mascarar sintomas.
+
+**Encontre a causa raiz e corrija a arquitetura/CSS/componente responsável.**
+
+E principalmente:
+
+**NÃO altere o visual do site só por alterar.**
+
+A melhoria deve ser percebida na:
+
+**fluidez + estabilidade + responsividade + precisão dos toques + qualidade da experiência.**
+
+Comece pela **AUDITORIA** e identifique primeiro as causas dos problemas antes de realizar alterações.

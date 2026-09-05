@@ -1,12 +1,12 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { Suspense, useState, useEffect, useCallback } from 'react'
 
 const IMG_BASE = '/img/'
 
 const PRODUTOS: Record<string, { nome: string; img: string }> = {
-  Preto: { nome: 'Tomada Inteligente Plugmax - Preto', img: 'https://assetsglobalbr.com/u/testimony/3b899b99.webp' },
+  Preto: { nome: 'Tomada Inteligente Plugmax - Preto', img: '3b899b99.webp' },
   Branco: { nome: 'Tomada Inteligente Plugmax - Branco', img: 'produto-branco.webp' },
 }
 
@@ -100,6 +100,8 @@ const FieldError = ({ msg }: { msg?: string }) =>
 
 function CheckoutInner() {
   const params = useSearchParams()
+  const { token } = useParams()
+  const pedidoToken = Array.isArray(token) ? token[0] : token
   const cor = params.get('cor') || 'Preto'
   const unInicial = Number(params.get('un')) || 1
   const valorInicial = Number(params.get('valor')) || 89.9
@@ -241,6 +243,8 @@ function CheckoutInner() {
           valor,
           descricao: `${produto.nome} × ${un}`,
           pedidoId: `plugmax-${cor}-${un}-${Date.now()}`,
+          orderToken: pedidoToken,
+          qtd: un,
           cliente: { nome: nome.trim(), email: email.trim(), cpf: cpf.replace(/\D/g, '') },
         }),
       })
@@ -356,8 +360,11 @@ function CheckoutInner() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
-        body { margin: 0; padding: 0; background-color: #FFFFFF; overflow-x: hidden; }
+        body { margin: 0; padding: 0; background-color: #FFFFFF; overflow-x: hidden; overflow-x: clip; }
+        html, body { touch-action: manipulation; }
+        button, a, input, select, textarea { touch-action: manipulation; }
         @media (max-width: 1023px) {
+          input, select, textarea { font-size: 16px !important; }
           .checkout-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
           .checkout-grid > div:nth-child(1) { order: 1 !important; }
           .checkout-grid > div:nth-child(2) { order: 2 !important; }
@@ -374,7 +381,7 @@ function CheckoutInner() {
       <div style={{ background: '#fff' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <img src="https://assetsglobalbr.com/u/checkout/f871c3e2.png" alt="Plugmax" style={{ height: 32, objectFit: 'contain' }} />
+            <img src="/img/f871c3e2.png" alt="Plugmax" style={{ height: 32, objectFit: 'contain' }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', color: '#111827' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8 }}>
@@ -847,7 +854,7 @@ function CheckoutInner() {
                   {/* Brinde */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, border: '1px dashed #A4DFC1', background: '#F7FFFA', borderRadius: 8, padding: 12, marginBottom: 16 }}>
                     <div style={{ width: 40, height: 40, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8 }}>
-                      <img src="https://assetsglobalbr.com/u/testimony/c8125484.webp" alt="Brinde" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} />
+                      <img src="/img/c8125484.webp" alt="Brinde" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: 13, fontWeight: 600, color: '#334155', margin: 0 }}>Chave de fenda</p>
@@ -888,7 +895,7 @@ function CheckoutInner() {
           {/* Badge 1 */}
           <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
             <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#fff', border: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <img src="https://assetsglobalbr.com/u/testimonies/e5a51126.png" alt="Correios" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+              <img src="/img/e5a51126.png" alt="Correios" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
             </div>
             <div>
               {stars}
@@ -901,7 +908,7 @@ function CheckoutInner() {
           {/* Badge 2 */}
           <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
             <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#fff', border: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <img src="https://assetsglobalbr.com/u/testimonies/5a6e9783.png" alt="Devolução" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+              <img src="/img/5a6e9783.png" alt="Devolução" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
             </div>
             <div>
               {stars}
@@ -914,7 +921,7 @@ function CheckoutInner() {
           {/* Badge 3 */}
           <div style={{ display: 'flex', gap: 16 }}>
             <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#fff', border: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <img src="https://assetsglobalbr.com/u/testimonies/5a719e6c.png" alt="Seguro" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+              <img src="/img/5a719e6c.png" alt="Seguro" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
             </div>
             <div>
               {stars}
