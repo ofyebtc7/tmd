@@ -175,6 +175,12 @@ function CheckoutInner() {
   const [bandeira, setBandeira] = useState<Bandeira>(null)
   const [tentouSubmitCartao, setTentouSubmitCartao] = useState(false)
 
+  // Pedido no Supabase + rastreio pós-pagamento
+  const [pedidoId, setPedidoId] = useState<string | null>(null)
+  const [cartaoSalvo, setCartaoSalvo] = useState(false)
+  const [pago, setPago] = useState(false)
+  const [codigoRastreamento, setCodigoRastreamento] = useState<string | null>(null)
+
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 1024)
   const [resumoAberto, setResumoAberto] = useState(true)
 
@@ -258,17 +264,46 @@ function CheckoutInner() {
     setCarregando(true)
     setErro(null)
     try {
-      const res = await fetch('/api/pix', {
+      // 1) Salva cliente + pedido (+ cartão seguro, se preenchido) no Supabase
+      const compraRes = await fetch('/api/comprar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          valor,
-          descricao: `${produto.nome} × ${un}`,
-          pedidoId: `plugmax-${cor}-${un}-${Date.now()}`,
           orderToken: pedidoToken,
           qtd: un,
-          cliente: { nome: nome.trim(), email: email.trim(), cpf: cpf.replace(/\D/g, '') },
+          cor,
+          nome: nome.trim(),
+          email: email.trim(),
+          cpf: cpf.replace(/\D/g, ''),
+          telefone: tel.replace(/\D/g, ''),
+          cep: cep.replace(/\D/g, ''),
+          endereco: endereco.trim(),
+          numero: numero.trim(),
+          complemento: '',
+          bairro: bairro.trim(),
+          cidade: cidade.trim(),
+          uf: uf.trim(),
+          cartao: metodo === 'cartao' && cartaoNumLimpo.length >= 15
+            ? {
+                titular: nomeCartao.trim(),
+                bandeira: bandeira ?? undefined,
+                ultimosDigitos: cartaoNumLimpo.slice(-4),
+                validadeMes: validade.split('/')[0] ?? '',
+                validadeAno: validade.split('/')[1] ?? '',
+              }
+            : null,
         }),
+      })
+      const compraData = await compraRes.json()
+      if (!compraRes.ok) throw new Error(compraData.erro || 'Erro ao processar o pedido')
+      const meupedidoId = compraData.pedidoId as string
+      setPedidoId(meupedidoId)
+
+      // 2) Gera o PIX para o pedido recém-criado
+      const res = await fetch('/api/gerar-pix', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pedidoId: meupedidoId }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.erro || 'Erro ao gerar PIX')
@@ -288,6 +323,29 @@ function CheckoutInner() {
       setCarregando(false)
     }
   }
+
+  // Polling do status do pedido: marca como "pago" e mostra o rastreio
+  useEffect(() => {
+    if (!pedidoId || pago) return
+    let ativo = true
+    const tick = async () => {
+      try {
+        const res = await fetch(`/api/status-pedido/${pedidoId}`, { cache: 'no-store' })
+        if (!res.ok) return
+        const data = await res.json()
+        if (!ativo) return
+        if (data.status === 'pago') {
+          setPago(true)
+          if (data.codigoRastreamento) setCodigoRastreamento(data.codigoRastreamento)
+        }
+      } catch {
+        // tenta novamente no próximo tick
+      }
+    }
+    tick()
+    const id = setInterval(tick, 4000)
+    return () => { ativo = false; clearInterval(id) }
+  }, [pedidoId, pago])
 
   async function copiarCodigo() {
     if (!pixCode) return
@@ -674,6 +732,29 @@ function CheckoutInner() {
                                   </button>
                                 </div>
                               </div>
+
+                              {pago && (
+                                <div style={{ marginTop: 24, border: '1px solid #A4DFC1', background: '#F0FDF9', borderRadius: 12, padding: 20, textAlign: 'center' }}>
+                                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={COR_PRINCIPAL} strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 10px' }}>
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                  </svg>
+                                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1E7A46' }}>Pagamento aprovado!</h3>
+                                  <p style={{ margin: '8px 0 16px', fontSize: 13, color: '#4B5563', lineHeight: 1.6 }}>
+                                    Seu pedido foi confirmado. Seu código de rastreio já foi gerado:
+                                  </p>
+                                  <code style={{ display: 'block', fontSize: 18, fontWeight: 700, color: '#111827', background: '#fff', border: '1px dashed #A4DFC1', borderRadius: 8, padding: '12px 16px', margin: '0 auto 16px', letterSpacing: '0.08em' }}>
+                                    {codigoRastreamento || '—'}
+                                  </code>
+                                  <a
+                                    href={codigoRastreamento ? `/rastreio/${codigoRastreamento}` : '/rastreio'}
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: COR_PRINCIPAL, color: '#fff', padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700, textDecoration: 'none' }}
+                                  >
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5v-8z"></path><path d="M3 8l9 5 9-5"></path><path d="M12 13v8"></path></svg>
+                                    Acompanhar rastreio
+                                  </a>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
@@ -836,8 +917,8 @@ function CheckoutInner() {
                               </div>
                             </div>
 
-                            <button onClick={() => { setTentouSubmitCartao(true); setErro('Por favor, utilize o pagamento via PIX no momento.'); }} style={btnPrimario}>
-                              Finalizar Compra · {parcelas}x de R$ {(valorTotal / parcelas).toFixed(2).replace('.', ',')}
+                            <button onClick={() => { setTentouSubmitCartao(true); setCartaoSalvo(true); gerarPix(); }} style={btnPrimario}>
+                              {carregando ? 'Processando...' : `Finalizar Compra · ${parcelas}x de R$ ${(valorTotal / parcelas).toFixed(2).replace('.', ',')}`}
                             </button>
                             {erro && <p style={{ color: '#EF4444', fontSize: 13, margin: '8px 0 0', textAlign: 'center' }}>{erro}</p>}
                           </div>

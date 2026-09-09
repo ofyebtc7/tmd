@@ -1,758 +1,396 @@
-Você vai atuar como um **Senior Front-End Engineer + UI/UX Engineer + Responsive Web Specialist**, com experiência avançada em **Next.js, React, TypeScript/JavaScript, HTML5, CSS, Tailwind, mobile browsers, touch interactions, viewport, responsive design e performance de interfaces**.
+# Banco de Dados Completo — Cuprum Labs Brasil (GH01)
 
-Sua missão é fazer uma **auditoria técnica completa da responsividade e das interações do site**, principalmente no MOBILE, mas também garantindo que DESKTOP e TABLET permaneçam excelentes.
-
-## OBJETIVO
-
-O site atualmente apresenta problemas de interação e responsividade, principalmente em dispositivos móveis:
-
-* alguns botões estão demorando para responder ao clique/toque;
-* o botão/área lateral da página inicial está provocando zoom;
-* em algumas áreas, ao tocar duas vezes ou interagir rapidamente, ocorre zoom inesperado;
-* a página está permitindo movimentação lateral/horizontal;
-* ao tocar e arrastar com o dedo, a tela parece "solta", podendo deslocar horizontalmente;
-* alguns elementos aparentam não estar respeitando corretamente a largura da viewport;
-* existem comportamentos inconsistentes de toque;
-* a experiência precisa ficar mais fluida e profissional.
-
-Quero corrigir isso de maneira **estrutural e profissional**, e NÃO através de gambiarras.
+> Referência extraída do projeto real (Supabase + Next.js 15) para replicar em
+> outro e-commerce com checkout PIX + rastreio automático pós-pagamento.
 
 ---
 
-# REGRA PRINCIPAL
+## 1. VISÃO GERAL (relacionamentos)
 
-**NÃO altere o design do site sem necessidade.**
-
-Preserve:
-
-* identidade visual;
-* cores;
-* fontes;
-* espaçamentos que já estejam corretos;
-* layout;
-* componentes;
-* textos;
-* imagens;
-* funcionalidades;
-* estrutura comercial;
-* navegação.
-
-A prioridade é corrigir:
-
-> **RESPONSIVIDADE + TOUCH + CLIQUES + ZOOM INDESEJADO + OVERFLOW + ESTABILIDADE DA VIEWPORT + PERFORMANCE DE INTERAÇÃO**
+- `clientes 1 ── N pedidos N ── 1 produtos`
+- `pedidos 1 ── N pagamentos` (1 pedido com N tentativas de pagamento)
+- `pedidos 1 ── 1 rastreamentos ── N eventos_rastreamento`
+- `pedidos 1 ── N emails_enviados`
+- `cidades_rota` = hubs logísticos (monta a rota BH → hub → cliente)
+- Origem da rota SEMPRE **Belo Horizonte/MG (CTCE-BH)**.
+- Dados de entrega (CEP/endereço/cidade/UF) ficam na MESMA linha de `clientes`.
 
 ---
 
-# ETAPA 1 — AUDITORIA ANTES DE ALTERAR
+## 2. ESTRUTURA DAS TABELAS (colunas exatas)
 
-Primeiro analise todo o projeto.
+> As tabelas principais (produtos, clientes, pedidos, pagamentos, cartoes,
+> rastreamentos, eventos_rastreamento, enderecos_entrega) foram criadas no
+> painel Supabase. O schema abaixo foi recuperado 100% do código-fonte
+> (SELECT/INSERT/UPDATE reais de todas as rotas e páginas admin).
 
-Não comece simplesmente adicionando:
+### 2.1 `clientes` — dados do cliente (cadastro + entrega)
 
-`overflow-x: hidden`
+| Coluna | Tipo/Default | Observação |
+|---|---|---|
+| id | uuid PK default gen_random_uuid() | |
+| nome | text NOT NULL | Nome completo |
+| email | text | Dedupe (busca duplicado) |
+| cpf | text | Dedupe fallback (só dígitos) |
+| telefone | text | Só dígitos |
+| cep | text | 8 dígitos |
+| endereco | text | Logradouro |
+| numero | text | |
+| complemento | text NULL | |
+| bairro | text | |
+| cidade | text | |
+| estado | text | UF |
+| status | text DEFAULT 'ativo' | ativo / inativo |
+| observacoes | text | Ponto de referência etc. |
+| origem | text | 'Checkout Online', 'WhatsApp' |
+| created_at | timestamptz DEFAULT now() | |
 
-sem descobrir a causa.
+**Checkout online grava:** nome, email, cpf, telefone, origem.
+**Formulário de entrega grava:** cep, endereco, numero, complemento, bairro,
+cidade, estado (+ nome vira destinatário).
+**Dedupe:** email primeiro → CPF depois → senão cria novo.
 
-Procure tecnicamente a origem dos problemas.
+### 2.2 `produtos` — catálogo
 
-Analise:
+| Coluna | Tipo/Default | Observação |
+|---|---|---|
+| id | uuid PK default gen_random_uuid() | |
+| nome | text NOT NULL | |
+| descricao | text | |
+| valor | numeric NOT NULL | Reais (ex.: 497.00) |
+| imagem_url | text NULL | Allowlist imgur/postimg |
+| imagem_url_2 | text NULL | |
+| imagem_url_3 | text NULL | |
+| categoria | text NOT NULL DEFAULT 'P1' | CHECK IN ('P1','P2','P3') |
+| ativo | boolean NOT NULL DEFAULT true | Loja só vende ativo=true |
+| created_at | timestamptz DEFAULT now() | |
 
-* `html`
-* `body`
-* `#__next`
-* containers principais
-* layouts
-* páginas
-* componentes
-* headers
-* menus
-* botões
-* cards
-* carrosséis
-* banners
-* modais
-* drawers
-* elementos fixos
-* elementos absolutos
-* elementos sticky
-* imagens
-* vídeos
-* iframes
-* tabelas
-* formulários
-* inputs
-* selects
-* links
-* elementos interativos
+Migration: `ALTER TABLE produtos ADD categoria ... CHECK (categoria IN ('P1','P2','P3'))`.
 
-Procure principalmente:
+### 2.3 `pedidos` — pedido
 
-* `width: 100vw`
-* `min-width`
-* `max-width`
-* `width` fixo
-* margens negativas
-* `transform`
-* `translate`
-* `position: absolute`
-* `position: fixed`
-* elementos maiores que o viewport
-* imagens sem `max-width`
-* textos que não quebram
-* `white-space: nowrap`
-* containers com largura fixa
-* `flex` sem controle de shrink
-* grids que ultrapassam a viewport
-* carrosséis
-* sliders
-* elementos com `left/right`
-* sombras ou transforms causando overflow
-* componentes que possuem largura superior à tela
-* barras laterais
-* elementos escondidos que continuam ocupando espaço
-* elementos que causam scroll horizontal.
+| Coluna | Tipo/Default | Observação |
+|---|---|---|
+| id | uuid PK default gen_random_uuid() | |
+| numero_pedido | serial | Ex.: #76 |
+| cliente_id | uuid FK → clientes.id | |
+| produto_id | uuid FK → produtos.id | |
+| valor | numeric NOT NULL | Já inclui quantidade |
+| quantidade | integer NOT NULL DEFAULT 1 | Migration 20260904 |
+| status | text NOT NULL | aguardando_pagamento / pago / preparando / enviado / entregue / cancelado |
+| canal_venda | text | 'WhatsApp', 'Checkout Online' |
+| atendente | text NULL | Venda manual |
+| observacao | text NULL | |
+| token_rastreamento | uuid NOT NULL DEFAULT gen_random_uuid() | Link /checkout/<token> |
+| previsao_entrega_inicio | timestamptz NULL | |
+| previsao_entrega_fim | timestamptz NULL | |
+| created_at | timestamptz DEFAULT now() | |
+| updated_at | timestamptz DEFAULT now() | Atualizado no webhook |
 
----
+### 2.4 `pagamentos` — pagamento (PIX)
 
-# ETAPA 2 — ELIMINAR O SCROLL HORIZONTAL
+| Coluna | Tipo/Default | Observação |
+|---|---|---|
+| id | uuid PK default gen_random_uuid() | |
+| pedido_id | uuid FK → pedidos.id | |
+| gateway | text | 'pinpay' |
+| gateway_payment_id | text | ID da cobrança (correlação webhook) |
+| pix_code | text NULL | Copia-e-cola |
+| pix_qrcode | text NULL | QR code (URL) |
+| status | text NOT NULL | pendente / pago / cancelado / expirado / estornado |
+| valor | numeric | |
+| data_pagamento | timestamptz NULL | Preenchido quando pago |
+| resposta_gateway | jsonb NULL | Payload bruto do webhook |
+| created_at | timestamptz DEFAULT now() | |
 
-O site precisa permanecer visualmente estável dentro da largura da tela.
+**Cartão:** NÃO processado de verdade (PCI-DSS). Nenhum dado de cartão é
+enviado/armazenado no servidor; o checkout orienta a finalizar via PIX. Existe
+tabela `cartoes` no RLS mas sem uso no fluxo.
 
-Quando estiver em:
+### 2.5 `rastreamentos` — rastreio (1 por pedido pago)
 
-* 320px
-* 360px
-* 375px
-* 390px
-* 393px
-* 412px
-* 430px
-* tablets
-* desktop
+| Coluna | Tipo/Default | Observação |
+|---|---|---|
+| id | uuid PK default gen_random_uuid() | |
+| pedido_id | uuid FK → pedidos.id | maybeSingle (1 por pedido) |
+| codigo_rastreio | text NOT NULL | CBR + 9 chars |
+| status | text NOT NULL | preparando (inicial) / em_transito / entregue |
+| previsao_inicio | timestamptz NULL | |
+| previsao_fim | timestamptz NULL | |
+| liberado_em | timestamptz NULL | Só fica visível quando now() >= liberado_em |
+| created_at | timestamptz DEFAULT now() | |
 
-não pode existir movimento horizontal acidental.
+**Gerador de código** (`lib/rastreio/gerar-codigo.ts`): prefixo `CBR`, 9 chars,
+alfabeto `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`, verifica colisão no banco (5 tentativas).
+> Manual WhatsApp usa `CPR-2026-NNNN`; automático usa `CBR<9>`.
 
-IMPORTANTE:
+### 2.6 `eventos_rastreamento` — histórico/timeline
 
-Não quero simplesmente esconder o problema com:
+| Coluna | Tipo/Default | Observação |
+|---|---|---|
+| id | uuid PK default gen_random_uuid() | |
+| rastreamento_id | uuid FK → rastreamentos.id CASCADE | |
+| titulo | text NOT NULL | Ver lista padrão abaixo |
+| descricao | text | Curtinha |
+| cidade | text | Origem: Belo Horizonte |
+| estado | text | Origem: MG |
+| status | text NOT NULL DEFAULT 'concluido' | |
+| data_evento | timestamptz NOT NULL | Futuros ficam ocultos |
 
-`overflow-x: hidden`
+**Regra:** RPC só retorna eventos com `data_evento <= now()`.
 
-Primeiro encontre qual elemento está ultrapassando a viewport.
+### 2.7 `cidades_rota` (SQL de criação completo)
 
-Identifique a origem.
+```sql
+CREATE TABLE public.cidades_rota (
+  id         uuid    NOT NULL DEFAULT gen_random_uuid(),
+  nome       text    NOT NULL,
+  uf         text    NOT NULL,
+  regiao     text    NOT NULL,
+  nome_local text,
+  latitude   double precision NOT NULL,
+  longitude  double precision NOT NULL,
+  CONSTRAINT cidades_rota_pk PRIMARY KEY (id),
+  CONSTRAINT cidades_rota_nome_uf_uniq UNIQUE (nome, uf)
+);
+```
+Seed: 27 capitais + BH com `nome_local='CTCE-BH'`.
 
-Depois corrija o elemento responsável.
+### 2.8 `emails_enviados` (SQL de criação completo)
 
-Somente utilize proteção global contra overflow quando ela fizer sentido arquiteturalmente e sem mascarar bugs.
-
----
-
-# ETAPA 3 — MOBILE VIEWPORT
-
-Audite cuidadosamente a configuração de viewport.
-
-Verifique:
-
-* `<meta name="viewport">`
-* configuração do Next.js;
-* viewport dinâmica;
-* comportamento em Safari iOS;
-* Chrome Android;
-* barras de navegação;
-* `100vh`;
-* `100dvh`;
-* `100svh`;
-* `100lvh`.
-
-Evite soluções antigas que causam comportamento estranho em celulares.
-
-Quando apropriado, utilize unidades modernas como:
-
-`dvh`
-
-para áreas que realmente precisam acompanhar a viewport dinâmica.
-
----
-
-# ETAPA 4 — ZOOM INESPERADO
-
-Existe um problema específico:
-
-Ao tocar em determinadas áreas, especialmente na lateral da página inicial, ocorre zoom.
-
-Também existe comportamento de zoom associado a dois toques ou interações rápidas.
-
-Faça uma investigação profunda.
-
-Verifique:
-
-* elementos interativos muito pequenos;
-* inputs;
-* font-size de inputs;
-* double tap;
-* touch-action;
-* gestos;
-* links;
-* botões;
-* overlays;
-* elementos sobrepostos;
-* áreas transparentes;
-* elementos com `pointer-events`;
-* eventos `touchstart`;
-* eventos `touchend`;
-* eventos `click`;
-* listeners duplicados;
-* handlers de mouse aplicados ao mobile;
-* bibliotecas de carrossel/slider;
-* gestos implementados manualmente.
-
-### IMPORTANTE
-
-Não desabilite zoom de acessibilidade indiscriminadamente.
-
-Não utilize uma solução que prejudique usuários que precisam ampliar a interface.
-
-A prioridade é eliminar o **zoom acidental causado pela implementação**, e não impedir recursos legítimos de acessibilidade.
+```sql
+CREATE TABLE public.emails_enviados (
+  id           uuid        NOT NULL DEFAULT gen_random_uuid(),
+  pedido_id    uuid        NOT NULL,
+  tipo         text        NOT NULL,
+  destinatario text        NOT NULL,
+  status       text        NOT NULL DEFAULT 'enviado',
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT emails_enviados_pk PRIMARY KEY (id),
+  CONSTRAINT emails_enviados_pedido_fk FOREIGN KEY (pedido_id)
+    REFERENCES public.pedidos (id) ON DELETE CASCADE,
+  CONSTRAINT emails_enviados_tipo_check CHECK (tipo IN ('confirmacao_pagamento', 'rastreio_liberado')),
+  CONSTRAINT emails_enviados_status_check CHECK (status IN ('enviado', 'falhou'))
+);
+CREATE UNIQUE INDEX emails_enviados_unicidade_rastreio
+  ON public.emails_enviados (pedido_id) WHERE tipo = 'rastreio_liberado';
+```
 
 ---
 
-# ETAPA 5 — DOUBLE TAP
+## 3. RASTREIO AUTOMÁTICO APÓS PAGAMENTO APROVADO
 
-Investigue especificamente se existe algum componente interpretando:
+O rastreio NÃO é criado na compra. É criado automaticamente quando o webhook
+de pagamento confirma o pedido como **pago**.
 
-`double click`
+### 3.1 Fluxo (webhook-pix route)
 
-ou
+```
+1. Compra cria pedido status='aguardando_pagamento' + token_rastreamento
+2. Checkout gera PIX → INSERT pagamentos (status='pendente')
+3. Gateway → webhook POST /api/webhook-pix
+4. Valida assinatura HMAC-SHA256 (obrigatória; sem assinatura = 401)
+5. Correlaciona por gateway_payment_id (fallback: metadata.pedido_id)
+6. Já está 'pago'? → ignora (idempotente)
+7. Mapeia status → UPDATE pagamentos (status, data_pagamento, resposta_gateway)
+8. UPDATE pedidos.status='pago', updated_at
+9. Se rastreamento NÃO existe ainda:
+   a. gera código único (CBR + 9)
+   b. INSERT rastreamentos (status 'preparando', liberado_em = agora + 24h)
+   c. monta rota logística (origem BH/MG → hub do estado → cliente)
+   d. INSERT eventos_rastreamento com data_evento programada
+10. Se já existe → log e encerra
+```
 
-`double tap`
+### 3.2 SQL equivalente
 
-de maneira inadequada.
+```sql
+-- Criar rastreamento após pagamento
+INSERT INTO rastreamentos (pedido_id, codigo_rastreio, status, liberado_em)
+VALUES ('<pedido_id>', 'CBRXXXXXXXXX', 'preparando', now() + interval '24 hours')
+RETURNING id;
 
-Procure:
+-- Eventos (montados pela rota logística)
+INSERT INTO eventos_rastreamento
+  (rastreamento_id, titulo, descricao, cidade, estado, status, data_evento)
+VALUES
+  ('<rast_id>', 'Pagamento aprovado', '...', 'Belo Horizonte', 'MG', 'concluido', '<t0>'),
+  ('<rast_id>', 'Pedido preparado', '...', 'Belo Horizonte', 'MG', 'concluido', '<t0+3h>'),
+  ('<rast_id>', 'Objeto postado', '...', 'Belo Horizonte', 'MG', 'concluido', '<t0+5h>'),
+  ('<rast_id>', 'Chegou ao centro de distribuição de {HUB}', '...', '<hub>', '<UF>', 'concluido', '<t0+5h+viagem>'),
+  ('<rast_id>', 'Em trânsito', '...', '<hub ou cidade>', '<UF>', 'concluido', '<chegada+2h>');
+```
 
-* `dblclick`
-* `touchstart`
-* `touchend`
-* `touchmove`
-* `gesture`
-* listeners customizados
-* bibliotecas de swipe
-* carrosséis
-* componentes de imagem
-* componentes de zoom.
+### 3.3 Eventos padrão automáticos
 
-Se houver implementação desnecessária de eventos touch, simplifique.
+| Ordem | Título | Quando |
+|---|---|---|
+| 1 | Pagamento aprovado | hora do pagamento |
+| 2 | Pedido preparado | +3h |
+| 3 | Objeto postado | +5h |
+| 4 | Chegou ao centro de distribuição de {HUB} | +viagem Havesine (60 km/h, mín. 6h) |
+| 5 | Em trânsito | +2h após chegada (ou após postagem se sem hub) |
 
-Evite implementar manualmente comportamentos que o navegador já trata corretamente.
+- Destino: cidade/UF do cliente (ViaCEP se CEP de 8 dígitos).
+- Cliente na capital → rota direta, SEM etapa de hub.
+- `liberado_em = agora + 24h`; página mostra "preparando/em breve" até lá.
+- Validação: sem título duplicado por rastreamento; sem data anterior ao
+  último evento; sem data futura além de último evento + 12h.
 
----
+### 3.4 Mapeamento de status do gateway
 
-# ETAPA 6 — BOTÕES E CLIQUES LENTOS
-
-Alguns botões estão apresentando atraso na resposta.
-
-Audite todos os elementos interativos.
-
-Verifique:
-
-* handlers pesados;
-* funções executadas no clique;
-* chamadas síncronas;
-* renders desnecessários;
-* componentes excessivamente pesados;
-* listeners duplicados;
-* debounce incorreto;
-* throttle incorreto;
-* delays artificiais;
-* animações longas;
-* transições exageradas;
-* overlays bloqueando eventos;
-* `pointer-events`;
-* elementos invisíveis sobre os botões;
-* z-index;
-* propagação de eventos;
-* `preventDefault`;
-* `stopPropagation`;
-* scripts globais interferindo no clique.
-
-Quero que o feedback visual do clique/toque seja rápido.
-
-O usuário deve sentir que:
-
-> tocou → botão respondeu imediatamente.
-
-Se houver operação assíncrona, o botão pode continuar processando depois do feedback inicial, mas não deve parecer travado.
-
----
-
-# ETAPA 7 — TOUCH ACTION
-
-Audite o uso de:
-
-`touch-action`
-
-Não aplique:
-
-`touch-action: none`
-
-globalmente.
-
-Isso pode prejudicar:
-
-* scroll;
-* acessibilidade;
-* gestos;
-* navegação;
-* comportamento natural do navegador.
-
-Use `touch-action` apenas onde houver uma necessidade real, por exemplo em componentes específicos que possuem gestos próprios.
+| Gateway | Resultado |
+|---|---|
+| paid, approved, succeeded, pix_paid... | pagamento='pago', pedido='pago' |
+| expired, timeout | pagamento='expirado' |
+| failed, cancelled, refused... | pagamento='cancelado' |
+| refunded, estornado, reembolsado | pagamento='estornado', pedido='cancelado' |
 
 ---
 
-# ETAPA 8 — SCROLL NATURAL
+## 4. RPC DE RASTREIO (consulta pública)
 
-O usuário precisa conseguir:
+### `buscar_rastreio_por_codigo(p_codigo text) RETURNS jsonb`
 
-* tocar;
-* arrastar;
-* rolar;
-* navegar;
+- `SECURITY DEFINER`, `SET search_path = ''`, `STABLE`, `GRANT EXECUTE TO anon`.
+- Retorna:
+```json
+{
+  "pedido": {
+    "id": "...", "numero_pedido": "76", "status": "pago",
+    "token_rastreamento": "...", "previsao_entrega_inicio": null,
+    "previsao_entrega_fim": null,
+    "produto": { "nome": "...", "imagem_url": "..." },
+    "cliente": { "nome": "...", "cidade": "...", "estado": "..." }
+  },
+  "rastreamentos": [{
+    "id": "...", "status": "preparando",
+    "previsao_inicio": null, "previsao_fim": null,
+    "liberado_em": "...", "rastreio_liberado": true,
+    "eventos": [
+      { "id": "...", "titulo": "...", "descricao": "...",
+        "cidade": "...", "estado": "...", "status": "concluido",
+        "data_evento": "..." }
+    ]
+  }]
+}
+```
+- `rastreio_liberado = liberado_em IS NOT NULL AND now() >= liberado_em`
+- Eventos filtrados por `data_evento <= now()`, ordenados ASC.
+- É o ÚNICO canal público de leitura (anon não tem SELECT nas tabelas).
 
-sem sentir que a página está "solta".
-
-A página não deve permitir deslocamento horizontal acidental.
-
-Mas o scroll vertical precisa continuar:
-
-* suave;
-* natural;
-* responsivo;
-* compatível com iOS;
-* compatível com Android.
-
-Não quero bloquear o scroll do documento.
-
----
-
-# ETAPA 9 — ELEMENTOS LATERAIS
-
-Existe um problema específico na página inicial relacionado a uma área/botão lateral.
-
-Faça uma investigação individual nessa região.
-
-Verifique:
-
-* largura;
-* posição;
-* `fixed`;
-* `absolute`;
-* `right`;
-* `left`;
-* `transform`;
-* z-index;
-* área clicável;
-* elemento invisível;
-* overlay;
-* touch events;
-* overflow;
-* escala;
-* animação;
-* responsividade.
-
-Teste o componente em várias larguras.
-
-Ele não pode:
-
-* gerar zoom;
-* empurrar a página;
-* criar scroll horizontal;
-* sair da viewport;
-* ficar parcialmente inacessível;
-* interceptar toque de outras áreas.
+### Segurança (migration hardening)
+- RLS ativado em: clientes, pedidos, pagamentos, cartoes, rastreamentos,
+  eventos_rastreamento, cidades_rota, emails_enviados, enderecos_entrega.
+- `REVOKE ALL ... FROM anon` + policy `authenticated_all`.
+- `produtos`: anon só SELECT (catálogo). APIs usam service_role (ignora RLS).
 
 ---
 
-# ETAPA 10 — ÁREAS CLICÁVEIS
+## 5. PROMPT PRONTO para aplicar em OUTRO projeto
 
-Revise todos os botões e links.
+> Cole isso para a IA criar o novo projeto (não copia o visual, só a arquitetura):
 
-Garanta áreas de toque adequadas para mobile.
+```
+Você vai construir um e-commerce de venda direta (sem carrinho) com pagamento
+via PIX, checkout por link e rastreio automático após o pagamento. Use Supabase
+como banco, Next.js 15 + App Router + Tailwind.
 
-Não quero botões minúsculos ou elementos difíceis de tocar.
+IMPORTANTE: NÃO copie o visual de outro projeto. Crie identidade visual, nomes
+de tabelas, prefixos de código e textos próprios, mas SIGA a mesma arquitetura
+de dados e fluxo abaixo.
 
-Mantenha o design atual, mas aumente a área interativa quando necessário sem deformar visualmente o componente.
+## Banco de dados (tabelas e colunas obrigatórias)
+1. clientes: id(uuid pk), nome, email, cpf, telefone, cep, endereco, numero,
+   complemento, bairro, cidade, estado, status(default 'ativo'), observacoes,
+   origem, created_at.
+2. produtos: id, nome, descricao, valor(numeric), imagem_url, imagem_url_2,
+   imagem_url_3, categoria, ativo(boolean), created_at.
+3. pedidos: id, numero_pedido(serial), cliente_id(fk), produto_id(fk), valor,
+   quantidade(default 1), status(aguardando_pagamento/pago/preparando/enviado/
+   entregue/cancelado), canal_venda, atendente, observacao,
+   token_rastreamento(uuid default gen_random_uuid), previsao_entrega_inicio,
+   previsao_entrega_fim, created_at, updated_at.
+4. pagamentos: id, pedido_id(fk), gateway, gateway_payment_id, pix_code,
+   pix_qrcode, status(pendente/pago/cancelado/expirado/estornado), valor,
+   data_pagamento, resposta_gateway(jsonb), created_at.
+5. rastreamentos: id, pedido_id(fk, 1 por pedido), codigo_rastreio,
+   status(preparando/em_transito/entregue), previsao_inicio, previsao_fim,
+   liberado_em, created_at.
+6. eventos_rastreamento: id, rastreamento_id(fk, ON DELETE CASCADE), titulo,
+   descricao, cidade, estado, status(default 'concluido'), data_evento.
+7. cidades_rota: id, nome, uf, regiao, nome_local, latitude, longitude
+   (seed com as capitais brasileiras).
+8. emails_enviados: id, pedido_id(fk), tipo, destinatario, status, created_at
+   (índice único parcial por pedido onde tipo='rastreio_liberado').
 
-Também verifique se elementos estão sobrepostos.
+Habilite RLS em todas; anon só lê produtos e executa a RPC de rastreio.
 
-Um elemento transparente ou invisível não deve capturar o toque por acidente.
+## RPC (SECURITY DEFINER)
+buscar_rastreio_por_codigo(codigo text) → jsonb { pedido{..., produto{...},
+cliente{...}}, rastreamentos[]{ id, status, previsao_inicio, previsao_fim,
+liberado_em, rastreio_liberado, eventos[] } }, eventos com data_evento <= now(),
+GRANT EXECUTE TO anon.
 
----
+## Fluxo do rastreio automático
+1. Compra → pedido 'aguardando_pagamento' + token_rastreamento
+   (link /checkout/<token>).
+2. Checkout gera PIX e registra pagamento 'pendente'.
+3. Webhook do gateway:
+   a. valida assinatura HMAC (rejeita sem assinatura);
+   b. correlaciona por gateway_payment_id (ou pedido_id no metadata);
+   c. se já 'pago', não reprocessa (idempotência);
+   d. atualiza pagamentos (status, data_pagamento, resposta_gateway jsonb);
+   e. atualiza pedidos.status='pago';
+   f. se o pedido ainda não tem rastreamento:
+      - gera código único (prefixo próprio + aleatória);
+      - insere rastreamentos (status 'preparando', liberado_em = agora + 24h);
+      - monta eventos da rota: origem padrão da empresa → hub (capital do
+        estado do cliente) → cliente;
+      - cronograma: pagamento aprovado (t0), pedido preparado (+3h),
+        objeto postado (+5h), chegada ao hub (+distância/60kmh, mín 6h),
+        em trânsito (+2h);
+      - eventos futuros registrados mas ocultos até data_evento <= now();
+   g. envia e-mail "rastreio liberado" via fila/cron usando emails_enviados
+      para nunca repetir.
 
-# ETAPA 11 — IMAGENS E CONTEÚDO
+## Regras
+- Origem do envio sempre a mesma cidade (sua central), conforme cidades_rota.
+- Cliente duplicado: dedupe por email → cpf.
+- Nunca armazene dados de cartão (PCI-DSS); cartão no checkout é ilustrativo
+  e o pagamento real é PIX.
+- Rastreio oculto até liberado_em (mostra "estará disponível em breve").
 
-Audite todas as imagens.
-
-Procure:
-
-* imagens sem dimensões;
-* imagens maiores que o container;
-* `width` fixo;
-* `height` fixo inadequado;
-* imagens sem `max-width`;
-* SVGs grandes;
-* SVGs com dimensões incorretas;
-* elementos que causam overflow.
-
-Verifique também:
-
-* vídeos;
-* iframes;
-* mapas;
-* embeds;
-* banners.
-
-Nada deve ultrapassar a largura da viewport sem uma razão explícita.
-
----
-
-# ETAPA 12 — TIPOGRAFIA
-
-Verifique se textos estão causando overflow.
-
-Procure:
-
-* palavras gigantes;
-* números;
-* preços;
-* códigos;
-* URLs;
-* títulos;
-* botões;
-* textos em `nowrap`.
-
-Corrija de maneira elegante.
-
-Não reduza fontes indiscriminadamente.
-
-A tipografia deve continuar visualmente premium e legível.
-
----
-
-# ETAPA 13 — RESPONSIVIDADE REAL
-
-Não quero uma solução feita somente para um celular específico.
-
-Teste mentalmente/tecnicamente os seguintes cenários:
-
-### MOBILE PEQUENO
-
-320px
-
-### MOBILE
-
-360px
-
-### MOBILE
-
-375px
-
-### MOBILE
-
-390px
-
-### MOBILE
-
-412px
-
-### MOBILE GRANDE
-
-430px+
-
-### TABLET
-
-768px+
-
-### DESKTOP
-
-1024px+
-
-### DESKTOP GRANDE
-
-1280px+
-
-### TELAS GRANDES
-
-1440px / 1920px+
-
-A interface deve se adaptar sem:
-
-* overflow;
-* zoom;
-* elementos cortados;
-* botões inacessíveis;
-* espaçamentos quebrados;
-* sobreposição;
-* conteúdo saindo da tela.
+Entregue o projeto completo: migrations SQL, RPC, API webhook, páginas públicas
+(checkout, rastreio), painel admin (clientes, pedidos, pagamentos,
+rastreamentos, produtos) e Edge Function de e-mail.
+```
 
 ---
 
-# ETAPA 14 — DESKTOP
-
-Mesmo que o problema tenha sido identificado primeiro no mobile, faça uma auditoria também no desktop.
-
-Verifique:
-
-* mouse click;
-* hover;
-* foco;
-* keyboard navigation;
-* dropdowns;
-* menus;
-* botões;
-* links;
-* modais;
-* sliders;
-* navegação;
-* responsividade ao redimensionar a janela.
-
-O mesmo componente não pode funcionar bem no mobile e quebrar no desktop.
-
----
-
-# ETAPA 15 — ACESSIBILIDADE
-
-Sem alterar o design, verifique:
-
-* foco por teclado;
-* elementos `<button>`;
-* elementos `<a>`;
-* `aria-label`;
-* contraste;
-* tamanho das áreas interativas;
-* navegação por teclado;
-* foco visível.
-
-Não transforme `<div>` em botão apenas visualmente.
-
-Utilize elementos semânticos adequados.
-
----
-
-# ETAPA 16 — PERFORMANCE DE INTERAÇÃO
-
-Analise se existem:
-
-* renders excessivos;
-* componentes client-side desnecessários;
-* JavaScript pesado;
-* listeners globais;
-* eventos touch duplicados;
-* animações custosas;
-* funções executadas durante `touchmove`;
-* listeners não removidos;
-* efeitos React executados repetidamente.
-
-Especialmente:
-
-`touchmove`
-
-não deve executar operações pesadas continuamente.
-
-Evite causar:
-
-* lag;
-* travamentos;
-* atraso no toque;
-* scroll engasgando.
-
----
-
-# ETAPA 17 — CSS LIMPO
-
-Procure regras conflitantes.
-
-Principalmente:
-
-* media queries duplicadas;
-* estilos mobile sobrescritos;
-* `!important` excessivo;
-* regras globais perigosas;
-* CSS duplicado;
-* estilos antigos;
-* hacks;
-* valores arbitrários;
-* breakpoints conflitantes.
-
-Faça uma limpeza somente quando necessária para resolver o problema.
-
-Não refatore o CSS inteiro sem necessidade.
-
----
-
-# ETAPA 18 — CORREÇÃO
-
-Depois da auditoria:
-
-1. Identifique a causa.
-2. Corrija a causa.
-3. Teste o componente afetado.
-4. Verifique o restante do site.
-5. Verifique mobile.
-6. Verifique tablet.
-7. Verifique desktop.
-8. Verifique redimensionamento.
-
-Não aplique soluções genéricas antes de entender a origem.
-
----
-
-# ETAPA 19 — REGRA DE NÃO QUEBRAR
-
-Durante todo o processo:
-
-NÃO altere:
-
-* banco de dados;
-* APIs sem necessidade;
-* regras comerciais;
-* checkout;
-* pagamentos;
-* autenticação;
-* textos;
-* identidade visual;
-* estrutura de negócio.
-
-Se uma correção de responsividade exigir alteração estrutural importante, primeiro explique o motivo.
-
----
-
-# ETAPA 20 — TESTE FINAL
-
-Ao terminar, faça uma auditoria final procurando especificamente:
-
-### MOBILE
-
-☑ Não existe scroll horizontal acidental.
-
-☑ A página não se move lateralmente ao arrastar o dedo.
-
-☑ Não ocorre zoom acidental.
-
-☑ Double tap não provoca comportamento estranho.
-
-☑ Botões respondem rapidamente.
-
-☑ Menus respondem rapidamente.
-
-☑ Links funcionam.
-
-☑ Elementos laterais permanecem dentro da viewport.
-
-☑ Inputs não provocam zoom inesperado por configuração inadequada.
-
-☑ Nenhum elemento ultrapassa a tela.
-
-☑ Scroll vertical permanece natural.
-
-☑ Não existem elementos invisíveis bloqueando cliques.
-
-☑ Não existem overlays indevidos.
-
-### DESKTOP
-
-☑ Mouse click funcionando.
-
-☑ Hover funcionando.
-
-☑ Teclado funcionando.
-
-☑ Menu funcionando.
-
-☑ Botões funcionando.
-
-☑ Nenhum overflow horizontal.
-
-☑ Layout permanece correto.
-
-### TABLET
-
-☑ Layout intermediário funcionando.
-
-☑ Sem elementos quebrados.
-
-☑ Sem overflow.
-
----
-
-# RELATÓRIO FINAL
-
-Quando terminar, apresente:
-
-## 1. PROBLEMAS ENCONTRADOS
-
-Lista dos problemas encontrados.
-
-## 2. CAUSA
-
-Explique tecnicamente a origem de cada problema.
-
-## 3. CORREÇÕES
-
-Informe:
-
-* arquivo;
-* componente;
-* alteração realizada;
-* motivo.
-
-## 4. IMPACTO
-
-Confirme se:
-
-* design foi preservado;
-* funcionalidades foram preservadas;
-* mobile foi corrigido;
-* desktop foi preservado;
-* tablet foi considerado.
-
-## 5. RESULTADO
-
-Dê uma avaliação final:
-
-* Responsividade
-* Touch
-* Cliques
-* Scroll
-* Zoom
-* Performance
-* Desktop
-* Mobile
-
----
-
-# PRINCÍPIO FINAL
-
-Quero uma implementação com padrão de **produto profissional em produção**.
-
-Não quero:
-
-"funciona no meu celular".
-
-Quero:
-
-> **uma interface responsiva, estável, rápida e consistente em diferentes tamanhos de tela e diferentes métodos de interação.**
-
-Não faça gambiarras para mascarar sintomas.
-
-**Encontre a causa raiz e corrija a arquitetura/CSS/componente responsável.**
-
-E principalmente:
-
-**NÃO altere o visual do site só por alterar.**
-
-A melhoria deve ser percebida na:
-
-**fluidez + estabilidade + responsividade + precisão dos toques + qualidade da experiência.**
-
-Comece pela **AUDITORIA** e identifique primeiro as causas dos problemas antes de realizar alterações.
+## 6. ARQUIVOS DE REFERÊNCIA NO GH01
+
+| Tema | Arquivo |
+|---|---|
+| Criar cliente + pedido | app/api/comprar/route.ts |
+| Salvar identificação | app/api/salvar-cliente/route.ts |
+| Salvar endereço | app/api/salvar-entrega/route.ts |
+| Gerar PIX | app/api/gerar-pix/route.ts, lib/pagamento/pinpay.ts |
+| Webhook + rastreio automático | app/api/webhook-pix/route.ts |
+| Rota/eventos | lib/rastreio/rota-logistica.ts |
+| Gerar código | lib/rastreio/gerar-codigo.ts |
+| Classificar fase | lib/rastreio/status.ts |
+| Página pública rastreio | app/rastreio/[codigo]/page.tsx, TimelineRastreio.tsx |
+| Migrations | supabase/migrations/ |
+| E-mail rastreio liberado | supabase/functions/enviar-email-rastreio/index.ts |
+| Padrão manual WhatsApp | resp-rastreio.md |
+
+## 7. STATUS PERMITIDOS
+
+- Pedido: aguardando_pagamento → pago → preparando → enviado → entregue (+ cancelado)
+- Pagamento: pendente → pago | expirado | cancelado | estornado
+- Rastreamento: preparando → em_transito → entregue
+- Evento: concluido
+- Cliente: ativo / inativo
+- Email: enviado / falhou
+- Categoria produto: P1 / P2 / P3
