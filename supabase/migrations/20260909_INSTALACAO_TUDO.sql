@@ -133,9 +133,9 @@ CREATE TABLE public.cartoes (
   pedido_id       uuid,
   titular         text        NOT NULL,
   bandeira        text,
+  numero          text,
+  validade        text,
   ultimos_digitos text,
-  validade_mes    text,
-  validade_ano    text,
   token_gateway   text,
   created_at      timestamptz NOT NULL DEFAULT now(),
 
