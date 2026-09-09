@@ -30,6 +30,12 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
+  async redirects() {
+    return [{ source: '/index.html', destination: '/', permanent: true }]
+  },
+  async rewrites() {
+    return [{ source: '/', destination: '/landing.html' }]
+  },
   async headers() {
     return [
       {
