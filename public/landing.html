@@ -758,6 +758,7 @@ async function iniciarCheckout(btn){
         const data = await resp.json().catch(() => ({}));
         if (resp.ok && data && data.checkoutUrl) {
           clearTimeout(desarme);
+          solta();   // rearma botão/trava ANTES de navegar — nunca deixa o estado preso no bfcache
           window.location.assign(anexarUtms(data.checkoutUrl));
           return;
         }
