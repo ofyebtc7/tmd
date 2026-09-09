@@ -712,6 +712,7 @@ async function iniciarCheckout(btn){
 
   const trava = () => {
     if (!b) return;
+    b.dataset.ctaOriginal = b.innerHTML;
     b.disabled = true;
     b.classList.add('cursor-wait','cta-carregando');
     b.innerHTML =
@@ -727,7 +728,9 @@ async function iniciarCheckout(btn){
     if (!b) return;
     b.disabled = false;
     b.classList.remove('cursor-wait','cta-carregando');
-    if (htmlOriginal != null) b.innerHTML = htmlOriginal;
+    if (b.dataset.ctaOriginal != null) b.innerHTML = b.dataset.ctaOriginal;
+    else if (htmlOriginal != null) b.innerHTML = htmlOriginal;
+    b.removeAttribute('data-cta-original');
   };
 
   trava();
@@ -819,13 +822,33 @@ render();
 let total=15*60; const cds=[document.getElementById('countdown'),document.getElementById('countdown2')];
 setInterval(()=>{ if(total<=0) return; total--; const m=String(Math.floor((total%3600)/60)).padStart(2,'0'); const s=String(total%60).padStart(2,'0'); cds.forEach(c=>{ if(c) c.textContent='00:'+m+':'+s; }); },1000);
 
+/* Prewarm da rota que gera o token do checkout.
+   Aquecer /api/checkout no load evita o "delay de 1º clique" (cold start do
+   serverless no Vercel). Gera apenas um token assinado — não cria pedido. */
+(function(){ try { fetch('/api/checkout', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ cor:corKit, unidades:KIT.tiers[tierIdx].un }), keepalive:true }).catch(()=>{}); } catch(e){} })();
+
 /* barra fixa */
 const bar=document.getElementById('stickyBar');
 window.addEventListener('scroll',()=>{ if(window.scrollY>600) bar.classList.remove('translate-y-full'); else bar.classList.add('translate-y-full'); });
 
 /* garante topo imediato ao voltar/navegar (bfcache) — instant, sem suavizar,
-   evitando a sensação de "deriva" que o scroll-behavior:smooth causa aqui */
-window.addEventListener('pageshow', function(e) { window.scrollTo({ top: 0, behavior: 'instant' }); });
+   evitando a sensação de "deriva" que o scroll-behavior:smooth causa aqui.
+   Também rearma a trava de duplo-clique E restaura qualquer CTA que ficou
+   preso em "Preparando sua compra…": ao retornar via bfcache o estado JS é
+   restaurado como estava (botões disabled, __checkoutBusy=true) porque o
+   navegador não roda o finally do clique anterior. */
+window.addEventListener('pageshow', function(e) {
+  window.__checkoutBusy = false;
+  document.querySelectorAll('.cta-carregando, [data-cta-original]').forEach(el => {
+    const btn = el.tagName === 'BUTTON' ? el : null;
+    if (!btn) return;
+    btn.disabled = false;
+    btn.classList.remove('cursor-wait','cta-carregando');
+    if (btn.dataset.ctaOriginal != null) btn.innerHTML = btn.dataset.ctaOriginal;
+    btn.removeAttribute('data-cta-original');
+  });
+  window.scrollTo({ top: 0, behavior: 'instant' });
+});
 </script>
 
 

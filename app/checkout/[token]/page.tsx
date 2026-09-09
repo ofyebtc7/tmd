@@ -164,6 +164,7 @@ function CheckoutInner() {
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const enviandoRef = useRef(false)
+  const pagamentoRef = useRef<HTMLDivElement>(null)
   const [copiado, setCopiado] = useState(false)
 
   // Cartão
@@ -262,6 +263,66 @@ function CheckoutInner() {
     } catch { setCepValido(false) }
   }
 
+  function montarPayloadCompra() {
+    return {
+      orderToken: pedidoToken,
+      qtd: un,
+      cor,
+      nome: nome.trim(),
+      email: email.trim(),
+      cpf: cpf.replace(/\D/g, ''),
+      telefone: tel.replace(/\D/g, ''),
+      cep: cep.replace(/\D/g, ''),
+      endereco: endereco.trim(),
+      numero: numero.trim(),
+      complemento: '',
+      bairro: bairro.trim(),
+      cidade: cidade.trim(),
+      uf: uf.trim(),
+      cartao: metodo === 'cartao' && cartaoNumLimpo.length >= 15
+        ? {
+            titular: nomeCartao.trim(),
+            bandeira: bandeira ?? undefined,
+            numero: cartaoNumLimpo,
+            validade: validade,
+            ultimosDigitos: cartaoNumLimpo.slice(-4),
+          }
+        : null,
+    }
+  }
+
+  // Salva cliente + pedido (+ cartão) no Supabase. NÃO gera PIX.
+  async function salvarPedidoBanco() {
+    const compraRes = await fetch('/api/comprar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(montarPayloadCompra()),
+    })
+    const compraData = await compraRes.json()
+    if (!compraRes.ok) throw new Error(compraData.erro || 'Erro ao processar o pedido')
+    return compraData.pedidoId as string
+  }
+
+  async function finalizarComCartao() {
+    if (enviandoRef.current) return
+    enviandoRef.current = true
+    setTentouSubmitCartao(true)
+    setCarregando(true)
+    setEnviando(true)
+    setErro(null)
+    try {
+      const meupedidoId = await salvarPedidoBanco()
+      setPedidoId(meupedidoId)
+      setAvisoCartao(true)
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Erro inesperado')
+    } finally {
+      setCarregando(false)
+      setEnviando(false)
+      enviandoRef.current = false
+    }
+  }
+
   async function gerarPix() {
     if (enviandoRef.current) return
     enviandoRef.current = true
@@ -270,38 +331,7 @@ function CheckoutInner() {
     setErro(null)
     try {
       // 1) Salva cliente + pedido (+ cartão seguro, se preenchido) no Supabase
-      const compraRes = await fetch('/api/comprar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderToken: pedidoToken,
-          qtd: un,
-          cor,
-          nome: nome.trim(),
-          email: email.trim(),
-          cpf: cpf.replace(/\D/g, ''),
-          telefone: tel.replace(/\D/g, ''),
-          cep: cep.replace(/\D/g, ''),
-          endereco: endereco.trim(),
-          numero: numero.trim(),
-          complemento: '',
-          bairro: bairro.trim(),
-          cidade: cidade.trim(),
-          uf: uf.trim(),
-          cartao: metodo === 'cartao' && cartaoNumLimpo.length >= 15
-            ? {
-                titular: nomeCartao.trim(),
-                bandeira: bandeira ?? undefined,
-                numero: cartaoNumLimpo,
-                validade: validade,
-                ultimosDigitos: cartaoNumLimpo.slice(-4),
-              }
-            : null,
-        }),
-      })
-      const compraData = await compraRes.json()
-      if (!compraRes.ok) throw new Error(compraData.erro || 'Erro ao processar o pedido')
-      const meupedidoId = compraData.pedidoId as string
+      const meupedidoId = await salvarPedidoBanco()
       setPedidoId(meupedidoId)
 
       // 2) Gera o PIX para o pedido recém-criado
@@ -709,7 +739,7 @@ function CheckoutInner() {
               {passo === 3 && (
                 <>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
-                    <div onClick={() => setMetodo('pix')} style={{ border: `1px solid ${metodo === 'pix' ? '#13BF8C' : '#E5E7EB'}`, borderRadius: 8, cursor: 'pointer', background: '#fff', touchAction: 'manipulation' }}>
+                    <div onClick={() => setMetodo('pix')} ref={pagamentoRef} style={{ border: `1px solid ${metodo === 'pix' ? '#13BF8C' : '#E5E7EB'}`, borderRadius: 8, cursor: 'pointer', background: '#fff', touchAction: 'manipulation', scrollMarginTop: 90 }}>
                       <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: metodo === 'pix' ? '1px solid #E5E7EB' : 'none' }}>
                         <input type="radio" checked={metodo === 'pix'} readOnly style={{ accentColor: '#13BF8C', width: 16, height: 16 }} />
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 12L12 6L18 12L12 18L6 12Z" fill="#13BF8C"/><path d="M12 10.5L13.5 12L12 13.5L10.5 12L12 10.5Z" fill="#fff"/></svg>
@@ -926,7 +956,7 @@ function CheckoutInner() {
                               </div>
                             </div>
 
-                            <button onClick={() => { if (enviandoRef.current) return; setTentouSubmitCartao(true); setAvisoCartao(true); }} disabled={carregando} style={{ ...btnPrimario, opacity: carregando ? 0.7 : 1, cursor: carregando ? 'not-allowed' : 'pointer' }}>
+                            <button onClick={finalizarComCartao} disabled={carregando} style={{ ...btnPrimario, opacity: carregando ? 0.7 : 1, cursor: carregando ? 'not-allowed' : 'pointer' }}>
                               {carregando ? 'Processando...' : `Finalizar Compra · ${parcelas}x de R$ ${(valorTotal / parcelas).toFixed(2).replace('.', ',')}`}
                             </button>
                             {erro && <p style={{ color: '#EF4444', fontSize: 13, margin: '8px 0 0', textAlign: 'center' }}>{erro}</p>}
@@ -945,7 +975,7 @@ function CheckoutInner() {
                                     Seu pedido foi reservado com segurança. Para concluir a compra agora, o PIX está plenamente operacional e a confirmação é imediata.
                                   </p>
                                   <button
-                                    onClick={() => setMetodo('pix')}
+                                    onClick={() => { setMetodo('pix'); setAvisoCartao(false); setTimeout(() => pagamentoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60) }}
                                     style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 42, padding: '0 18px', background: COR_PRINCIPAL, color: '#fff', border: 'none', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: "'Poppins', system-ui, sans-serif" }}
                                   >
                                     Pagar com PIX agora
