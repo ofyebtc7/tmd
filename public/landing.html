@@ -132,7 +132,7 @@
     </div>
     <div class="flex-1 overflow-y-auto px-5 py-3">
       <a href="/" data-close="" class="flex items-center justify-between py-3 border-b border-line font-semibold"><span>Início</span><span class="text-muted">›</span></a>
-      <a id="linkRastreio" target="_blank" rel="noopener" data-close="" class="flex items-center justify-between py-3 border-b border-line font-semibold" href="https://rastreie-seupedido.online/track"><span>Rastrear Pedido</span><span class="text-muted">›</span></a>
+      <a id="linkRastreio" href="/rastreio" data-close="" class="flex items-center justify-between py-3 border-b border-line font-semibold"><span>Rastrear Pedido</span><span class="text-muted">›</span></a>
       <p class="text-xs font-bold tracking-wider text-muted mt-5 mb-1">POLÍTICAS</p>
       <a href="/politica-frete/index.html" data-close="" class="flex items-center justify-between py-2.5 border-b border-line"><span>Política de Frete</span><span class="text-muted">›</span></a>
       <a href="/pagamento-seguro/index.html" data-close="" class="flex items-center justify-between py-2.5 border-b border-line"><span>Pagamento Seguro</span><span class="text-muted">›</span></a>
@@ -328,7 +328,7 @@
   <p class="text-xs text-muted mb-5">Loja oficial · tomada inteligente com USB, USB-C e cabos retráteis</p>
 
   <!-- Rastreio — destaque no rodapé -->
-  <a id="btnRastreio" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 w-full bg-brand text-white font-bold text-base py-3.5 rounded-cta mb-1 shadow-sm active:scale-[.99] transition">
+  <a id="btnRastreio" class="flex items-center justify-center gap-2 w-full bg-brand text-white font-bold text-base py-3.5 rounded-cta mb-1 shadow-sm active:scale-[.99] transition">
     <svg viewBox="0 0 24 24" class="ic w-5 h-5" stroke-width="2"><path d="M3 7h11v9H3z"></path><path d="M14 10h4l3 3v3h-7z"></path><circle cx="7.5" cy="17.3" r="1.4"></circle><circle cx="17.5" cy="17.3" r="1.4"></circle></svg>
     Rastrear Meu Pedido
   </a>
@@ -381,7 +381,7 @@ const IMG = 'img/';
 const PRODUTO = {
   marca: 'Plugmax',
   email: 'onlinesuportebr@proton.me',
-  rastreioUrl: 'https://rastreie-seupedido.online/track',
+  rastreioUrl: '/rastreio',
   empresa: 'Plugmax LTDA · R. Pestalozzi, 875, Sala 9 — Guilhermina, Praia Grande/SP — CEP 11702-020',
 
   barraFrete: 'FRETE GRÁTIS Brasil',
