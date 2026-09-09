@@ -50,6 +50,23 @@
   .spin-fwd { animation: spinf .7s linear infinite; }
   button[disabled] { -webkit-tap-highlight-color: transparent; }
 
+  /* ===== CTAs de compra: resposta visual imediata no toque =====
+     O press-state (escala + escurecimento) aparece no instante do toque
+     (:active), diferente do antigo active:scale-[.99], que era imperceptível.
+     Durante o POST /api/checkout a classe .cta-carregando mantém o mesmo
+     look de "pressionado" enquanto o botão mostra "Preparando sua compra…". */
+  .cta-comprar {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .cta-comprar:active:not(:disabled),
+  .cta-comprar.cta-carregando {
+    transform: scale(.97);
+    filter: brightness(.88) saturate(1.08);
+    transition-duration: 90ms;
+  }
+
   /* ===== Interação mobile: toque preciso, sem zoom acidental =====
      touch-action:manipulation elimina o atraso de ~300ms do double-tap e o
      zoom por toque duplo em elementos interativos/superfícies tocáveis,
@@ -169,7 +186,7 @@
 
       <div id="brindeBox"><div class="mt-3 flex items-center gap-2.5 bg-accent/10 border border-accent/40 rounded-xl p-2.5"><img src="img/brinde.webp" alt="brinde" class="w-11 h-11 rounded-lg object-cover shrink-0 bg-white"><p class="text-sm leading-tight"><span class="text-accentDk font-bold inline-flex items-center gap-1"><svg viewBox="0 0 24 24" class="ic w-4 h-4"><rect x="4" y="9.5" width="16" height="10.5" rx="1.5"></rect><path d="M3 9.5h18M12 9.5V20M12 9.5S10.6 5 8.3 5a2 2 0 0 0 0 4M12 9.5S13.4 5 15.7 5a2 2 0 0 1 0 4"></path></svg>Brinde grátis:</span> Chave de fenda para instalar <span class="text-muted">no pedido de hoje</span></p></div></div>
 
-      <button type="button" onclick="iniciarCheckout(this)" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-4 shadow-sm active:scale-[.99] transition" data-cta1="">QUERO MINHA PLUGMAX</button>
+      <button type="button" onclick="iniciarCheckout(this)" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-4 shadow-sm cta-comprar transition" data-cta1="">QUERO MINHA PLUGMAX</button>
       <p class="text-center text-xs text-muted mt-2 inline-flex items-center justify-center gap-1.5 w-full">
         <svg viewBox="0 0 24 24" class="ic w-3.5 h-3.5 text-accentDk"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg>
         Estoque baixo · oferta termina em <span class="font-bold text-accentDk" id="countdown">00:06:48</span>
@@ -195,7 +212,7 @@
     <div class="bg-white border border-line rounded-2xl p-4">
       <h2 class="text-lg font-bold mb-2" id="descTitulo">A tomada que acaba com a briga por ponto de energia</h2>
       <p class="text-muted text-[15px] leading-relaxed" id="descTexto">Chega de disputar a tomada e de procurar cabo pela casa. A Tomada Inteligente Plugmax junta numa peça só a tomada comum de 3 pinos, entradas USB e USB-C e dois cabos retráteis de 75cm — um Lightning e um Tipo-C — que ficam embutidos e recolhem sozinhos depois do uso. Com saída de carga rápida de 20W, ela troca a sua tomada antiga direto na caixa 4x2 embutida, deixa a parede limpa e organiza de vez a bagunça de carregadores. Disponível em preto e branco pra combinar com qualquer ambiente.</p>
-      <button type="button" onclick="iniciarCheckout(this)" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-4 shadow-sm active:scale-[.99] transition" data-cta1="">QUERO MINHA PLUGMAX</button>
+      <button type="button" onclick="iniciarCheckout(this)" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-4 shadow-sm cta-comprar transition" data-cta1="">QUERO MINHA PLUGMAX</button>
     </div>
   </section>
 
@@ -213,7 +230,7 @@
   </section>
 
   <!-- 9. CTA -->
-  <section class="px-4 pt-4"><button type="button" onclick="iniciarCheckout(this)" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta shadow-sm active:scale-[.99] transition" data-cta2="">APROVEITAR 48% OFF</button></section>
+  <section class="px-4 pt-4"><button type="button" onclick="iniciarCheckout(this)" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta shadow-sm cta-comprar transition" data-cta2="">APROVEITAR 48% OFF</button></section>
 
   <!-- 10. INFOGRÁFICOS -->
   <section class="px-4 pt-6">
@@ -255,7 +272,7 @@
         Oferta termina em <span class="font-bold text-accentDk" id="countdown2">00:06:48</span>
       </p>
       <p class="text-xs text-muted mt-0.5" id="precoOferta">R$ <span class="line-through">179,90</span> → <b class="text-ink text-lg">R$ 89,90</b> à vista no Pix</p>
-      <button type="button" onclick="iniciarCheckout(this)" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-3 shadow-sm active:scale-[.99] transition" data-cta2="">APROVEITAR 48% OFF</button>
+      <button type="button" onclick="iniciarCheckout(this)" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-3 shadow-sm cta-comprar transition" data-cta2="">APROVEITAR 48% OFF</button>
     </div>
   </section>
 
@@ -289,7 +306,7 @@
     <div class="marquee mt-4 -mx-4 overflow-hidden"><div id="avaliacoesTrack" class="marquee-track flex gap-3 w-max px-4" style="animation-duration: 20s;"><img src="img/avaliacao-1.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-2.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-3.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-4.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-5.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-6.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-7.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-8.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-1.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-2.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-3.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-4.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-5.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-6.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-7.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"><img src="img/avaliacao-8.webp" alt="Avaliação de cliente" width="300" height="300" decoding="async" class="w-40 h-40 rounded-xl object-cover shrink-0 border border-line"></div></div>
     <div class="space-y-3 mt-4" id="depoimentosBox"><article class="bg-white border border-line rounded-xl p-4"><div class="flex items-center gap-2"><div class="w-10 h-10 rounded-full bg-page flex items-center justify-center font-bold">C</div><div><p class="font-bold text-sm flex items-center gap-1">Camila R. <span class="text-brand text-xs inline-flex items-center gap-0.5"><svg viewBox="0 0 24 24" class="ic w-3.5 h-3.5"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 12l2.5 2.5L16 9"></path></svg>Verificado</span></p><p class="text-xs text-muted">Belo Horizonte/MG</p></div></div><p class="text-sm mt-2"><span class="text-gold">★★★★★</span></p><p class="text-sm text-muted mt-1">"Instalei no quarto e acabou a bagunça de cabo na cabeceira. Ficou lindo e é super prático."</p></article><article class="bg-white border border-line rounded-xl p-4"><div class="flex items-center gap-2"><div class="w-10 h-10 rounded-full bg-page flex items-center justify-center font-bold">R</div><div><p class="font-bold text-sm flex items-center gap-1">Rodrigo M. <span class="text-brand text-xs inline-flex items-center gap-0.5"><svg viewBox="0 0 24 24" class="ic w-3.5 h-3.5"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 12l2.5 2.5L16 9"></path></svg>Verificado</span></p><p class="text-xs text-muted">Curitiba/PR</p></div></div><p class="text-sm mt-2"><span class="text-gold">★★★★★</span></p><p class="text-sm text-muted mt-1">"Chamei um eletricista pra colocar e foi rápido. Carrega o celular numa boa e o design é discreto."</p></article><article class="bg-white border border-line rounded-xl p-4"><div class="flex items-center gap-2"><div class="w-10 h-10 rounded-full bg-page flex items-center justify-center font-bold">A</div><div><p class="font-bold text-sm flex items-center gap-1">Aline S. <span class="text-brand text-xs inline-flex items-center gap-0.5"><svg viewBox="0 0 24 24" class="ic w-3.5 h-3.5"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 12l2.5 2.5L16 9"></path></svg>Verificado</span></p><p class="text-xs text-muted">Recife/PE</p></div></div><p class="text-sm mt-2"><span class="text-gold">★★★★</span><span class="text-line">★</span></p><p class="text-sm text-muted mt-1">"Muito boa, os cabos retráteis salvam. Só achei que ia ser um pouco maior, mas coube certinho na caixa."</p></article><article class="bg-white border border-line rounded-xl p-4"><div class="flex items-center gap-2"><div class="w-10 h-10 rounded-full bg-page flex items-center justify-center font-bold">M</div><div><p class="font-bold text-sm flex items-center gap-1">Marcos T. <span class="text-brand text-xs inline-flex items-center gap-0.5"><svg viewBox="0 0 24 24" class="ic w-3.5 h-3.5"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 12l2.5 2.5L16 9"></path></svg>Verificado</span></p><p class="text-xs text-muted">Campinas/SP</p></div></div><p class="text-sm mt-2"><span class="text-gold">★★★★★</span></p><p class="text-sm text-muted mt-1">"Comprei duas, uma pra sala e outra pro escritório. USB, USB-C e ainda a tomada normal, resolve tudo."</p></article><article class="bg-white border border-line rounded-xl p-4"><div class="flex items-center gap-2"><div class="w-10 h-10 rounded-full bg-page flex items-center justify-center font-bold">J</div><div><p class="font-bold text-sm flex items-center gap-1">Juliana F. <span class="text-brand text-xs inline-flex items-center gap-0.5"><svg viewBox="0 0 24 24" class="ic w-3.5 h-3.5"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 12l2.5 2.5L16 9"></path></svg>Verificado</span></p><p class="text-xs text-muted">Porto Alegre/RS</p></div></div><p class="text-sm mt-2"><span class="text-gold">★★★★★</span></p><p class="text-sm text-muted mt-1">"Peguei a branca e combinou com a parede. Parou a briga por tomada aqui em casa."</p></article></div>
     <p class="text-center text-brand font-semibold text-sm mt-4" id="verTodas">Ver todas as 2.107 avaliações →</p>
-    <button type="button" onclick="iniciarCheckout(this)" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-4 shadow-sm active:scale-[.99] transition" data-cta3="">COMPRAR COM SEGURANÇA</button>
+    <button type="button" onclick="iniciarCheckout(this)" class="w-full text-center bg-buy text-white font-bold text-lg py-4 rounded-cta mt-4 shadow-sm cta-comprar transition" data-cta3="">COMPRAR COM SEGURANÇA</button>
   </section>
 
   <!-- 16. FAQ -->
@@ -349,7 +366,7 @@
 <div id="stickyBar" class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-line transition-transform">
   <div class="max-w-[480px] mx-auto flex items-center gap-3 px-4 py-3">
     <div class="shrink-0 leading-tight"><div class="text-xs text-muted line-through" id="stickyDe">R$ 179,90</div><div class="text-xl font-extrabold whitespace-nowrap" id="stickyPor">R$ 89,90</div></div>
-    <button type="button" onclick="iniciarCheckout(this)" class="flex-1 bg-buy text-white font-bold py-3 rounded-cta whitespace-nowrap active:scale-[.99] transition" data-cta4="">QUERO A MINHA</button>
+    <button type="button" onclick="iniciarCheckout(this)" class="flex-1 bg-buy text-white font-bold py-3 rounded-cta whitespace-nowrap cta-comprar transition" data-cta4="">QUERO A MINHA</button>
   </div>
 </div>
 
@@ -696,7 +713,7 @@ async function iniciarCheckout(btn){
   const trava = () => {
     if (!b) return;
     b.disabled = true;
-    b.classList.add('cursor-wait','opacity-80');
+    b.classList.add('cursor-wait','cta-carregando');
     b.innerHTML =
       '<span class="inline-flex items-center justify-center gap-2">' +
       '<svg class="spin-fwd w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
@@ -709,7 +726,7 @@ async function iniciarCheckout(btn){
     window.__checkoutBusy = false;
     if (!b) return;
     b.disabled = false;
-    b.classList.remove('cursor-wait','opacity-80');
+    b.classList.remove('cursor-wait','cta-carregando');
     if (htmlOriginal != null) b.innerHTML = htmlOriginal;
   };
 
