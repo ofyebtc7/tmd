@@ -15,14 +15,8 @@ export async function POST(request: NextRequest) {
     const valor = PRECOS[unidades]
     const token = criarTokenPedido({ cor, unidades, valor })
 
-    const params = new URLSearchParams({
-      cor,
-      un: String(unidades),
-      valor: String(valor),
-    })
-
     return NextResponse.json({
-      checkoutUrl: `/checkout/${token}?${params.toString()}`,
+      checkoutUrl: `/checkout/${token}`,
     })
   } catch {
     return NextResponse.json({ erro: 'Erro interno' }, { status: 500 })

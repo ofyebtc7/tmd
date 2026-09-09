@@ -98,13 +98,35 @@ const CheckIcon = () => (
 const FieldError = ({ msg }: { msg?: string }) =>
   msg ? <p style={{ color: '#EF4444', fontSize: 11, margin: '4px 0 0', fontWeight: 500 }}>{msg}</p> : null
 
+function decodificarPayloadToken(token: string): { cor: string; unidades: number; valor: number } | null {
+  try {
+    const corpo = token.split('.')[1]
+    if (!corpo) return null
+    const bin = atob(corpo.replace(/-/g, '+').replace(/_/g, '/'))
+    const txt = decodeURIComponent(Array.prototype.map.call(bin, c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))
+    const dados = JSON.parse(txt)
+    if (
+      dados &&
+      typeof dados.cor === 'string' &&
+      Number.isInteger(dados.unidades) &&
+      typeof dados.valor === 'number'
+    ) {
+      return { cor: dados.cor, unidades: dados.unidades, valor: dados.valor }
+    }
+  } catch {
+    return null
+  }
+  return null
+}
+
 function CheckoutInner() {
   const params = useSearchParams()
   const { token } = useParams()
   const pedidoToken = Array.isArray(token) ? token[0] : token
-  const cor = params.get('cor') || 'Preto'
-  const unInicial = Number(params.get('un')) || 1
-  const valorInicial = Number(params.get('valor')) || 89.9
+  const dadosPedido = pedidoToken ? decodificarPayloadToken(pedidoToken) : null
+  const cor = (dadosPedido ? null : params.get('cor')) || dadosPedido?.cor || 'Preto'
+  const unInicial = (dadosPedido ? null : Number(params.get('un'))) || dadosPedido?.unidades || 1
+  const valorInicial = (dadosPedido ? null : Number(params.get('valor'))) || dadosPedido?.valor || 89.9
   const valorUnitario = valorInicial / Math.max(unInicial, 1)
 
   const produto = PRODUTOS[cor] || PRODUTOS.Preto
