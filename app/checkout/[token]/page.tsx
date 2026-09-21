@@ -2,6 +2,7 @@
 
 import { useParams, useSearchParams } from 'next/navigation'
 import { Suspense, useState, useEffect, useCallback, useRef } from 'react'
+import { capturarFbc, lerFbp, gerarEventId } from '@/lib/meta/pixel'
 
 const IMG_BASE = '/img/'
 
@@ -187,6 +188,10 @@ function CheckoutInner() {
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 1024)
   const [resumoAberto, setResumoAberto] = useState(true)
 
+  // Cookies do Meta para atribuição de alta qualidade
+  const [fbc, setFbc] = useState<string | null>(null)
+  const [fbp, setFbp] = useState<string | null>(null)
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024)
     handleResize()
@@ -197,6 +202,72 @@ function CheckoutInner() {
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
+
+  // Ao avançar para o passo de pagamento, posiciona a tela no topo
+  // das opções de pagamento (PIX / Cartão), sem precisar rolar manualmente
+  useEffect(() => {
+    if (passo === 3) {
+      const t = setTimeout(() => {
+        pagamentoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 60)
+      return () => clearTimeout(t)
+    }
+  }, [passo])
+
+  // ── Helpers Meta Pixel ────────────────────────────────────────────────────
+  // Chama fbq de forma segura (evita erro caso o script ainda não tenha carregado)
+  // Inclui fbc e fbp automaticamente para melhor match rate
+  const fbq = useCallback(
+    (tipo: 'track' | 'trackCustom', evento: string, dados?: Record<string, unknown>, opcoes?: Record<string, unknown>) => {
+      try {
+        if (typeof window !== 'undefined' && typeof (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq === 'function') {
+          const fn = (window as unknown as { fbq: (...a: unknown[]) => void }).fbq
+          // Enriquecer dados com fbc/fbp para match rate máximo
+          const dadosEnriquecidos = {
+            ...(dados ?? {}),
+            ...(fbc ? { fbc } : {}),
+            ...(fbp ? { fbp } : {}),
+          }
+          if (opcoes) {
+            fn(tipo, evento, dadosEnriquecidos, opcoes)
+          } else {
+            fn(tipo, evento, dadosEnriquecidos)
+          }
+        }
+      } catch {
+        // silencia erros do pixel para não quebrar o checkout
+      }
+    },
+    [fbc, fbp]
+  )
+
+  // ── InitiateCheckout + ViewContent — dispara 1x ao abrir o checkout ────────
+  useEffect(() => {
+    // Capturar cookies de atribuição do Meta
+    const fbcCapturado = capturarFbc()
+    const fbpCapturado = lerFbp()
+    if (fbcCapturado) setFbc(fbcCapturado)
+    if (fbpCapturado) setFbp(fbpCapturado)
+
+    // ViewContent: usuário visualizou o produto no checkout
+    fbq('track', 'ViewContent', {
+      value: valorTotal,
+      currency: 'BRL',
+      content_ids: [cor],
+      content_type: 'product',
+      content_name: produto.nome,
+    })
+
+    // InitiateCheckout: usuário iniciou o processo de compra
+    fbq('track', 'InitiateCheckout', {
+      value: valorTotal,
+      currency: 'BRL',
+      num_items: un,
+      content_ids: [cor],
+      content_type: 'product',
+    }, { eventID: gerarEventId('checkout', 'InitiateCheckout') })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // array vazio: só na montagem
 
   const dadosIdentOk =
     nome.trim().length >= 3 &&
@@ -374,6 +445,20 @@ function CheckoutInner() {
         if (data.status === 'pago') {
           setPago(true)
           if (data.codigoRastreamento) setCodigoRastreamento(data.codigoRastreamento)
+
+          // ── Purchase — browser pixel com event_id estável para deduplicação com CAPI ──
+          fbq(
+            'track',
+            'Purchase',
+            {
+              value: valorTotal,
+              currency: 'BRL',
+              content_ids: [cor],
+              content_type: 'product',
+              num_items: un,
+            },
+            { eventID: gerarEventId(pedidoId, 'Purchase') }
+          )
         }
       } catch {
         // tenta novamente no próximo tick
@@ -382,7 +467,7 @@ function CheckoutInner() {
     tick()
     const id = setInterval(tick, 4000)
     return () => { ativo = false; clearInterval(id) }
-  }, [pedidoId, pago])
+  }, [pedidoId, pago, fbq, valorTotal, cor, un])
 
   async function copiarCodigo() {
     if (!pixCode) return
@@ -685,10 +770,10 @@ function CheckoutInner() {
                         <div onClick={() => setEntrega('sedex')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', border: entrega === 'sedex' ? '1px solid #13BF8C' : '1px solid #E5E7EB', borderRadius: 8, background: entrega === 'sedex' ? '#F0FDF4' : '#fff', cursor: 'pointer', touchAction: 'manipulation' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <input type="radio" checked={entrega === 'sedex'} readOnly style={{ accentColor: '#13BF8C', width: 16, height: 16 }} />
-                            <img src="/img/seguro/sedex.png" alt="Sedex" style={{ height: 22, width: 'auto', objectFit: 'contain' }} />
+                            <img src="/img/seguro/sedex.png" alt="Sedex" style={{ height: 18, width: 'auto', objectFit: 'contain' }} />
                             <div>
                               <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#111827' }}>Sedex - Correios</p>
-                              <p style={{ margin: 0, fontSize: 11, color: '#6B7280' }}>3 a 5 dias <span style={{background: '#FCD34D', padding: '1px 4px', borderRadius: 4, fontSize: 9, fontWeight: 800, color: '#000'}}>SEDEX</span></p>
+                              <p style={{ margin: 0, fontSize: 11, color: '#6B7280' }}>3 a 5 dias</p>
                             </div>
                           </div>
                           <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>R$ 14,90</span>
@@ -697,10 +782,10 @@ function CheckoutInner() {
                         <div onClick={() => setEntrega('full')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', border: entrega === 'full' ? '1px solid #13BF8C' : '1px solid #E5E7EB', borderRadius: 8, background: entrega === 'full' ? '#F0FDF4' : '#fff', cursor: 'pointer', touchAction: 'manipulation' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <input type="radio" checked={entrega === 'full'} readOnly style={{ accentColor: '#13BF8C', width: 16, height: 16 }} />
-                            <img src="/img/seguro/full.svg" alt="Envio FULL" style={{ height: 22, width: 'auto', objectFit: 'contain' }} />
+                            <img src="/img/seguro/full.svg" alt="Envio FULL" style={{ height: 18, width: 'auto', objectFit: 'contain' }} />
                             <div>
                               <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#111827' }}>Envio FULL</p>
-                              <p style={{ margin: 0, fontSize: 11, color: '#6B7280', display: 'flex', alignItems: 'center', gap: 4 }}>Entrega garantida <span style={{ color: '#10B981', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 2 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>FULL</span></p>
+                              <p style={{ margin: 0, fontSize: 11, color: '#6B7280' }}>Entrega garantida</p>
                             </div>
                           </div>
                           <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>R$ 21,90</span>
