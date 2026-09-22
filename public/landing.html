@@ -641,6 +641,28 @@ function renderUnidades(){
 
 renderPreco(); renderKit(); renderUnidades();
 
+/* ===== META PIXEL — eventos do funil (comércio) ===== */
+const brl = s => parseFloat(String(s || '').replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+const itemMeta = () => ({
+  content_name: 'Tomada Inteligente Plugmax',
+  content_category: 'Tomada inteligente',
+  content_ids: ['plugmax_' + String(corKit).toLowerCase().replace(/\s+/g, '-')],
+  content_type: 'product',
+  currency: 'BRL',
+});
+const tierSel = () => KIT.tiers[tierIdx];
+const fbqTrack = (ev, dados) => {
+  try {
+    if (window.fbq && typeof window.fbq === 'function') window.fbq('track', ev, dados);
+  } catch (e) {}
+};
+
+// ViewContent — visualizou o produto na página
+fbqTrack('ViewContent', Object.assign(itemMeta(), {
+  value: brl(tierSel().por),
+  num_items: tierSel().un,
+}));
+
 /* brinde */
 if (P.brinde) {
   $('#brindeBox').innerHTML =
@@ -722,6 +744,12 @@ async function iniciarCheckout(btn){
   if (!CHECKOUT_ATIVO) return;
   if (window.__checkoutBusy) return;   // trava duplo-clique / múltiplos botões
   window.__checkoutBusy = true;
+
+  // AddToCart — clique no botão de compra (kit/cor selecionados)
+  fbqTrack('AddToCart', Object.assign(itemMeta(), {
+    value: brl(tierSel().por),
+    num_items: tierSel().un,
+  }));
 
   const b = btn && btn.tagName === 'BUTTON' ? btn : null;
   const htmlOriginal = b ? b.innerHTML : null;

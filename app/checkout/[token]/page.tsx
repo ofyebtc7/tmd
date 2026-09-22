@@ -381,6 +381,17 @@ function CheckoutInner() {
     setCarregando(true)
     setEnviando(true)
     setErro(null)
+
+    // AddPaymentInfo — dados de pagamento fornecidos (cartão)
+    fbq('track', 'AddPaymentInfo', {
+      value: valorTotal,
+      currency: 'BRL',
+      payment_method: 'card',
+      content_ids: [cor],
+      content_type: 'product',
+      num_items: un,
+    })
+
     try {
       const meupedidoId = await salvarPedidoBanco()
       setPedidoId(meupedidoId)
@@ -400,6 +411,17 @@ function CheckoutInner() {
     setCarregando(true)
     setEnviando(true)
     setErro(null)
+
+    // AddPaymentInfo — dados de pagamento fornecidos (PIX)
+    fbq('track', 'AddPaymentInfo', {
+      value: valorTotal,
+      currency: 'BRL',
+      payment_method: 'pix',
+      content_ids: [cor],
+      content_type: 'product',
+      num_items: un,
+    })
+
     try {
       // 1) Salva cliente + pedido (+ cartão seguro, se preenchido) no Supabase
       const meupedidoId = await salvarPedidoBanco()
@@ -485,6 +507,14 @@ function CheckoutInner() {
       document.body.removeChild(el)
     }
     setCopiado(true)
+
+    // PixCopiado — PIX copiado (custom event p/ campanhas PIX)
+    fbq('trackCustom', 'PixCopiado', {
+      value: valorTotal,
+      currency: 'BRL',
+      pedido_id: pedidoId,
+    })
+
     setTimeout(() => setCopiado(false), 3000)
   }
 
