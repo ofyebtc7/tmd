@@ -30,7 +30,14 @@ interface ComprarPayload {
   bairro: string
   cidade: string
   uf: string
+  entrega?: string
   cartao?: CartaoSeguroPayload | null
+}
+
+const VALOR_FRETE: Record<string, number> = {
+  pac: 0,
+  sedex: 14.9,
+  full: 21.9,
 }
 
 export async function POST(request: NextRequest) {
@@ -53,6 +60,7 @@ export async function POST(request: NextRequest) {
       bairro,
       cidade,
       uf,
+      entrega,
       cartao,
     } = body
 
@@ -76,7 +84,8 @@ export async function POST(request: NextRequest) {
     }
 
     const precoUnitario = Math.round((pedidoToken.valor / pedidoToken.unidades) * 100) / 100
-    const valorTotal = Math.round(precoUnitario * quantidade * 100) / 100
+    const frete = VALOR_FRETE[entrega ?? 'pac'] ?? 0
+    const valorTotal = Math.round((precoUnitario * quantidade + frete) * 100) / 100
 
     if (!isSupabaseConfigurado()) {
       return NextResponse.json(
@@ -126,6 +135,13 @@ export async function POST(request: NextRequest) {
           email: emailLimpo,
           cpf: cpfLimpo,
           telefone,
+          cep,
+          endereco,
+          numero,
+          complemento: complemento || null,
+          bairro,
+          cidade,
+          estado: uf,
           status: 'ativo',
           origem: 'Checkout Online',
         })

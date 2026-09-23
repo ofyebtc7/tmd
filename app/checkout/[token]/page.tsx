@@ -156,6 +156,7 @@ function CheckoutInner() {
   const [cidade, setCidade] = useState('')
   const [uf, setUf] = useState('')
   const [entrega, setEntrega] = useState('pac')
+  const [complemento, setComplemento] = useState('')
   const [cepValido, setCepValido] = useState<boolean | null>(null)
 
   // PIX
@@ -188,10 +189,6 @@ function CheckoutInner() {
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 1024)
   const [resumoAberto, setResumoAberto] = useState(true)
 
-  // Cookies do Meta para atribuição de alta qualidade
-  const [fbc, setFbc] = useState<string | null>(null)
-  const [fbp, setFbp] = useState<string | null>(null)
-
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024)
     handleResize()
@@ -215,39 +212,79 @@ function CheckoutInner() {
   }, [passo])
 
   // ── Helpers Meta Pixel ────────────────────────────────────────────────────
-  // Chama fbq de forma segura (evita erro caso o script ainda não tenha carregado)
-  // Inclui fbc e fbp automaticamente para melhor match rate
-  const fbq = useCallback(
-    (tipo: 'track' | 'trackCustom', evento: string, dados?: Record<string, unknown>, opcoes?: Record<string, unknown>) => {
+  // Chama fbq de forma segura. Se o script ainda não carregou (afterInteractive),
+  // enfileira o evento e drena quando o fbq existir (igual ao PageView).
+  // Inclui fbc e fbp NA HORA do envio — nunca via state, porque setState é
+  // assíncrono e os eventos sairiam sem os cookies de atribuição da campanha.
+  const filaFbqRef = useRef<Array<{ tipo: 'track' | 'trackCustom'; evento: string; dados?: Record<string, unknown>; opcoes?: Record<string, unknown> }>>([])
+
+  const flushFilaFbq = useCallback((): boolean => {
+    const fbqWin = (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq
+    if (typeof fbqWin !== 'function' || filaFbqRef.current.length === 0) return false
+    while (filaFbqRef.current.length > 0) {
+      const item = filaFbqRef.current.shift()
+      if (!item) continue
+      const dadosEnriquecidos = {
+        ...(item.dados ?? {}),
+        ...(lerFbp() ? { fbp: lerFbp() } : {}),
+        ...(capturarFbc() ? { fbc: capturarFbc() } : {}),
+      }
       try {
-        if (typeof window !== 'undefined' && typeof (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq === 'function') {
-          const fn = (window as unknown as { fbq: (...a: unknown[]) => void }).fbq
-          // Enriquecer dados com fbc/fbp para match rate máximo
-          const dadosEnriquecidos = {
-            ...(dados ?? {}),
-            ...(fbc ? { fbc } : {}),
-            ...(fbp ? { fbp } : {}),
-          }
-          if (opcoes) {
-            fn(tipo, evento, dadosEnriquecidos, opcoes)
-          } else {
-            fn(tipo, evento, dadosEnriquecidos)
-          }
+        if (item.opcoes) {
+          fbqWin(item.tipo, item.evento, dadosEnriquecidos, item.opcoes)
+        } else {
+          fbqWin(item.tipo, item.evento, dadosEnriquecidos)
         }
       } catch {
         // silencia erros do pixel para não quebrar o checkout
       }
+    }
+    return true
+  }, [])
+
+  const fbq = useCallback(
+    (tipo: 'track' | 'trackCustom', evento: string, dados?: Record<string, unknown>, opcoes?: Record<string, unknown>) => {
+      const fbqWin = typeof window === 'undefined' ? undefined : (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq
+      if (typeof fbqWin === 'function') {
+        flushFilaFbq()
+        const dadosEnriquecidos = {
+          ...(dados ?? {}),
+          ...(lerFbp() ? { fbp: lerFbp() } : {}),
+          ...(capturarFbc() ? { fbc: capturarFbc() } : {}),
+        }
+        try {
+          if (opcoes) {
+            fbqWin(tipo, evento, dadosEnriquecidos, opcoes)
+          } else {
+            fbqWin(tipo, evento, dadosEnriquecidos)
+          }
+        } catch {
+          // silencia erros do pixel para não quebrar o checkout
+        }
+        return
+      }
+      // Script ainda não carregou: enfileira e espera o flush (início/meio da sessão)
+      filaFbqRef.current.push({ tipo, evento, dados, opcoes })
     },
-    [fbc, fbp]
+    [flushFilaFbq]
   )
+
+  // Drena a fila assim que o fbq ficar disponível (polling leve, igual ao PageView)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    let tentativas = 0
+    const timer = setInterval(() => {
+      if (flushFilaFbq() || tentativas >= 30) clearInterval(timer)
+      tentativas += 1
+    }, 200)
+    return () => clearInterval(timer)
+  }, [flushFilaFbq])
 
   // ── InitiateCheckout + ViewContent — dispara 1x ao abrir o checkout ────────
   useEffect(() => {
-    // Capturar cookies de atribuição do Meta
-    const fbcCapturado = capturarFbc()
-    const fbpCapturado = lerFbp()
-    if (fbcCapturado) setFbc(fbcCapturado)
-    if (fbpCapturado) setFbp(fbpCapturado)
+    // Persistir cookies de atribuição do Meta o quanto antes (fbclid → _fbc)
+    capturarFbc()
+    lerFbp()
 
     // ViewContent: usuário visualizou o produto no checkout
     fbq('track', 'ViewContent', {
@@ -346,10 +383,11 @@ function CheckoutInner() {
       cep: cep.replace(/\D/g, ''),
       endereco: endereco.trim(),
       numero: numero.trim(),
-      complemento: '',
+      complemento: complemento.trim(),
       bairro: bairro.trim(),
       cidade: cidade.trim(),
       uf: uf.trim(),
+      entrega,
       cartao: metodo === 'cartao' && cartaoNumLimpo.length >= 15
         ? {
             titular: nomeCartao.trim(),
@@ -778,7 +816,7 @@ function CheckoutInner() {
                     </div>
                     <div>
                       <label style={labelStyle}>Complemento (opcional)</label>
-                      <input style={inputStyle} placeholder="" />
+                      <input style={inputStyle} value={complemento} onChange={e => setComplemento(e.target.value)} placeholder="Apto, casa, bloco..." />
                     </div>
 
                     <div style={{ marginTop: 12 }}>

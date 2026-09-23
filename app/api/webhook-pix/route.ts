@@ -475,7 +475,7 @@ async function processarEvento(
       try {
         const { data: pedidoPago } = await supabaseAdmin
           .from('pedidos')
-          .select('valor, clientes ( email )')
+          .select('valor, clientes ( email, telefone, nome, cidade, estado, cep )')
           .eq('id', pagamento.pedido_id)
           .single()
 
@@ -487,6 +487,11 @@ async function processarEvento(
           pedidoId: pagamento.pedido_id,
           valor: Number(pedidoPago?.valor ?? 0),
           email: (clientePago as { email?: string } | undefined)?.email ?? null,
+          telefone: (clientePago as { telefone?: string } | undefined)?.telefone ?? null,
+          nome: (clientePago as { nome?: string } | undefined)?.nome ?? null,
+          cidade: (clientePago as { cidade?: string } | undefined)?.cidade ?? null,
+          estado: (clientePago as { estado?: string } | undefined)?.estado ?? null,
+          cep: (clientePago as { cep?: string } | undefined)?.cep ?? null,
         })
       } catch (erroCapi) {
         console.error('erro_enviar_purchase_capi', erroCapi)

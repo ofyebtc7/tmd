@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
+import { Suspense } from 'react'
+import { FacebookPixel } from './components/FacebookPixel'
+import { META_PIXEL_ID } from '@/lib/meta/config'
 
 export const metadata: Metadata = {
   title: 'Plugmax',
@@ -13,7 +16,7 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 }
 
-const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID ?? ''
+const PIXEL_ID = META_PIXEL_ID
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -38,10 +41,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     s.parentNode.insertBefore(t,s)
                   }(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
                   fbq('init', '${PIXEL_ID}');
-                  fbq('track', 'PageView');
                 `,
               }}
             />
+            <Suspense fallback={null}>
+              <FacebookPixel />
+            </Suspense>
             <noscript>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
