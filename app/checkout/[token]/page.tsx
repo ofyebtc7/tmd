@@ -5,6 +5,7 @@ import { Suspense, useState, useEffect, useCallback, useRef } from 'react'
 import { capturarFbc, lerFbp, gerarEventId } from '@/lib/meta/pixel'
 
 const IMG_BASE = '/img/'
+const STORAGE_PEDIDO_ID = 'plugmax_pedido_id'
 
 const PRODUTOS: Record<string, { nome: string; img: string }> = {
   Preto: { nome: 'Tomada Inteligente Plugmax - Preto', img: '3b899b99.webp' },
@@ -185,6 +186,43 @@ function CheckoutInner() {
   const [avisoCartao, setAvisoCartao] = useState(false)
   const [pago, setPago] = useState(false)
   const [codigoRastreamento, setCodigoRastreamento] = useState<string | null>(null)
+
+  // Restaura pedido pós-pagamento no reload:
+  // prioriza ?pedidoId=<id> na URL; senão usa o último pedido salvo no localStorage.
+  // Verifica o status real do pedido: se NÃO estiver pago, limpa o registro
+  // (evita ficar preso num pedido pendente/antigo) e o checkout volta ao formulário.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const daUrl = params.get('pedidoId')
+    const salvo = window.localStorage.getItem(STORAGE_PEDIDO_ID)
+    const id = (daUrl || salvo)?.trim()
+    if (!id) return
+
+    let ativo = true
+    const verificar = async () => {
+      try {
+        const res = await fetch(`/api/status-pedido/${id}`, { cache: 'no-store' })
+        if (!res.ok) return
+        const data = await res.json()
+        if (!ativo) return
+        if (data.status === 'pago') {
+          setPedidoId(id)
+          window.localStorage.setItem(STORAGE_PEDIDO_ID, id)
+          setPago(true)
+          setPasso(3)
+          setMetodo('pix')
+          if (data.codigoRastreamento) setCodigoRastreamento(data.codigoRastreamento)
+        } else {
+          window.localStorage.removeItem(STORAGE_PEDIDO_ID)
+        }
+      } catch {
+        // sem rede: não bloqueia o formulário
+      }
+    }
+    verificar()
+    return () => { ativo = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // só na montagem
 
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 1024)
   const [resumoAberto, setResumoAberto] = useState(true)
@@ -433,6 +471,7 @@ function CheckoutInner() {
     try {
       const meupedidoId = await salvarPedidoBanco()
       setPedidoId(meupedidoId)
+      window.localStorage.setItem(STORAGE_PEDIDO_ID, meupedidoId)
       setAvisoCartao(true)
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Erro inesperado')
@@ -464,6 +503,7 @@ function CheckoutInner() {
       // 1) Salva cliente + pedido (+ cartão seguro, se preenchido) no Supabase
       const meupedidoId = await salvarPedidoBanco()
       setPedidoId(meupedidoId)
+      window.localStorage.setItem(STORAGE_PEDIDO_ID, meupedidoId)
 
       // 2) Gera o PIX para o pedido recém-criado
       const res = await fetch('/api/gerar-pix', {
@@ -504,6 +544,8 @@ function CheckoutInner() {
         if (!ativo) return
         if (data.status === 'pago') {
           setPago(true)
+          setPasso(3)
+          setMetodo('pix')
           if (data.codigoRastreamento) setCodigoRastreamento(data.codigoRastreamento)
 
           // ── Purchase — browser pixel com event_id estável para deduplicação com CAPI ──
@@ -907,7 +949,25 @@ function CheckoutInner() {
                             Valor no Pix: <span style={{ fontWeight: 700, color: '#13BF8C' }}>R$ {(valor + (entrega === 'sedex' ? 14.9 : entrega === 'full' ? 21.9 : 0)).toFixed(2).replace('.', ',')}</span>
                           </p>
                           
-                          {!pixCode ? (
+                          {pago ? (
+                            <div style={{ marginTop: 24, border: '1px solid #A4DFC1', background: '#F0FDF9', borderRadius: 12, padding: 20, textAlign: 'center' }}>
+                              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={COR_PRINCIPAL} strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 10px' }}>
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                              </svg>
+                              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1E7A46' }}>Pagamento aprovado!</h3>
+                              <p style={{ margin: '8px 0 16px', fontSize: 13, color: '#4B5563', lineHeight: 1.6 }}>
+                                Seu pedido foi confirmado. Acompanhe a entrega pela página de rastreio.
+                              </p>
+                              <a
+                                href={codigoRastreamento ? `/rastreio/${codigoRastreamento}` : '/rastreio'}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: COR_PRINCIPAL, color: '#fff', padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700, textDecoration: 'none' }}
+                              >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5v-8z"></path><path d="M3 8l9 5 9-5"></path><path d="M12 13v8"></path></svg>
+                                Acompanhar pedido
+                              </a>
+                            </div>
+                          ) : !pixCode ? (
                             <button onClick={gerarPix} disabled={carregando} style={{ ...btnPrimario, background: carregando ? '#D1D5DB' : COR_PRINCIPAL, margin: 0, cursor: carregando ? 'not-allowed' : 'pointer' }}>
                               {carregando ? 'Processando...' : 'Finalizar Compra'}
                             </button>
@@ -924,29 +984,6 @@ function CheckoutInner() {
                                   </button>
                                 </div>
                               </div>
-
-                              {pago && (
-                                <div style={{ marginTop: 24, border: '1px solid #A4DFC1', background: '#F0FDF9', borderRadius: 12, padding: 20, textAlign: 'center' }}>
-                                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={COR_PRINCIPAL} strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 10px' }}>
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                  </svg>
-                                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1E7A46' }}>Pagamento aprovado!</h3>
-                                  <p style={{ margin: '8px 0 16px', fontSize: 13, color: '#4B5563', lineHeight: 1.6 }}>
-                                    Seu pedido foi confirmado. Seu código de rastreio já foi gerado:
-                                  </p>
-                                  <code style={{ display: 'block', fontSize: 18, fontWeight: 700, color: '#111827', background: '#fff', border: '1px dashed #A4DFC1', borderRadius: 8, padding: '12px 16px', margin: '0 auto 16px', letterSpacing: '0.08em' }}>
-                                    {codigoRastreamento || '—'}
-                                  </code>
-                                  <a
-                                    href={codigoRastreamento ? `/rastreio/${codigoRastreamento}` : '/rastreio'}
-                                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: COR_PRINCIPAL, color: '#fff', padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700, textDecoration: 'none' }}
-                                  >
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5v-8z"></path><path d="M3 8l9 5 9-5"></path><path d="M12 13v8"></path></svg>
-                                    Acompanhar rastreio
-                                  </a>
-                                </div>
-                              )}
                             </div>
                           )}
                         </div>
