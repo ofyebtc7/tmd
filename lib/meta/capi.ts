@@ -23,7 +23,7 @@ interface EventoPurchase {
   cep?: string | null
 }
 
-function hashSha256(valor: string): string | null {
+export function hashSha256(valor: string): string | null {
   try {
     return createHash('sha256').update(valor).digest('hex')
   } catch {
@@ -31,7 +31,7 @@ function hashSha256(valor: string): string | null {
   }
 }
 
-function normalizarTelefone(tel: string): string {
+export function normalizarTelefone(tel: string): string {
   // Remove tudo que não é dígito e garante +55 (DDI Brasil) p/ usuário brasileiro
   const digitos = tel.replace(/\D/g, '')
   if (!digitos) return ''

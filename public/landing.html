@@ -746,10 +746,35 @@ async function iniciarCheckout(btn){
   window.__checkoutBusy = true;
 
   // AddToCart — clique no botão de compra (kit/cor selecionados)
-  fbqTrack('AddToCart', Object.assign(itemMeta(), {
-    value: brl(tierSel().por),
-    num_items: tierSel().un,
-  }));
+  const addToCartEventId = 'AddToCart_' + Math.floor(Date.now() / 1000) + '_' + Math.floor(Math.random() * 1e6);
+  try {
+    if (window.fbq && typeof window.fbq === 'function') {
+      window.fbq('track', 'AddToCart', Object.assign(itemMeta(), {
+        value: brl(tierSel().por),
+        num_items: tierSel().un,
+      }), { eventID: addToCartEventId });
+    }
+    const leCookieLanding = nome => {
+      const m = document.cookie.match(new RegExp('(?:^|; )' + nome + '=([^;]*)'));
+      return m ? decodeURIComponent(m[1]) : null;
+    };
+    fetch('/api/funil/add-to-cart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventId: addToCartEventId,
+        valor: brl(tierSel().por),
+        numItems: tierSel().un,
+        contentIds: ['plugmax_' + String(corKit).toLowerCase().replace(/\s+/g, '-')],
+        contentType: 'product',
+        contentName: 'Tomada Inteligente Plugmax',
+        eventSourceUrl: location.href,
+        fbp: leCookieLanding('_fbp'),
+        fbc: leCookieLanding('_fbc'),
+      }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch (e) {}
 
   const b = btn && btn.tagName === 'BUTTON' ? btn : null;
   const htmlOriginal = b ? b.innerHTML : null;

@@ -327,23 +327,51 @@ function CheckoutInner() {
     capturarFbc()
     lerFbp()
 
+    const fbp = lerFbp()
+    const fbc = capturarFbc()
+    const dadosEvento = {
+      valor: valorTotal,
+      moeda: 'BRL',
+      numItems: un,
+      contentIds: [cor],
+      contentType: 'product',
+      contentName: produto.nome,
+      eventSourceUrl: typeof window !== 'undefined' ? window.location.href : null,
+      fbp,
+      fbc,
+    }
+
     // ViewContent: usuário visualizou o produto no checkout
+    const eventIdViewContent = gerarEventId('checkout', 'ViewContent')
     fbq('track', 'ViewContent', {
       value: valorTotal,
       currency: 'BRL',
       content_ids: [cor],
       content_type: 'product',
       content_name: produto.nome,
-    })
+    }, { eventID: eventIdViewContent })
+    void fetch('/api/funil/view-content', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...dadosEvento, eventId: eventIdViewContent }),
+      keepalive: true,
+    }).catch(() => {})
 
     // InitiateCheckout: usuário iniciou o processo de compra
+    const eventIdInitiateCheckout = gerarEventId('checkout', 'InitiateCheckout')
     fbq('track', 'InitiateCheckout', {
       value: valorTotal,
       currency: 'BRL',
       num_items: un,
       content_ids: [cor],
       content_type: 'product',
-    }, { eventID: gerarEventId('checkout', 'InitiateCheckout') })
+    }, { eventID: eventIdInitiateCheckout })
+    void fetch('/api/funil/initiate-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...dadosEvento, eventId: eventIdInitiateCheckout }),
+      keepalive: true,
+    }).catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // array vazio: só na montagem
 
