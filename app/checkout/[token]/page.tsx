@@ -962,28 +962,32 @@ function CheckoutInner() {
                         <span style={{ fontWeight: 600, fontSize: 13, color: '#111827' }}>PIX</span>
                       </div>
                       {metodo === 'pix' && (
-                        <div style={{ padding: '24px 16px', textAlign: 'center', background: '#F9FAFB', borderBottomLeftRadius: 8, borderBottomRightRadius: 8 }}>
-                          <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 16px', lineHeight: 1.5 }}>
-                            O código Pix expira em 30 minutos<br/>após finalizar a compra.
-                          </p>
-                          <p style={{ fontSize: 14, color: '#111827', margin: '0 0 24px' }}>
-                            Valor no Pix: <span style={{ fontWeight: 700, color: '#13BF8C' }}>R$ {(valor + (entrega === 'sedex' ? 14.9 : entrega === 'full' ? 21.9 : 0)).toFixed(2).replace('.', ',')}</span>
-                          </p>
+                        <div style={{ padding: pago ? '8px' : '24px 16px', textAlign: 'center', background: pago ? '#fff' : '#F9FAFB', borderBottomLeftRadius: 8, borderBottomRightRadius: 8 }}>
+                          {!pago && (
+                            <>
+                              <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 16px', lineHeight: 1.5 }}>
+                                O código Pix expira em 30 minutos<br/>após finalizar a compra.
+                              </p>
+                              <p style={{ fontSize: 14, color: '#111827', margin: '0 0 24px' }}>
+                                Valor no Pix: <span style={{ fontWeight: 700, color: '#13BF8C' }}>R$ {(valor + (entrega === 'sedex' ? 14.9 : entrega === 'full' ? 21.9 : 0)).toFixed(2).replace('.', ',')}</span>
+                              </p>
+                            </>
+                          )}
                           
                           {pago ? (
-                            <div style={{ marginTop: 24, border: '1px solid #A4DFC1', background: '#F0FDF9', borderRadius: 12, padding: 20, textAlign: 'center' }}>
+                            <div style={{ border: '1px solid #A4DFC1', background: '#F0FDF9', borderRadius: 12, padding: '28px 20px', textAlign: 'center' }}>
                               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={COR_PRINCIPAL} strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 10px' }}>
                                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
                               </svg>
-                              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1E7A46' }}>Pagamento aprovado!</h3>
-                              <p style={{ margin: '8px 0 16px', fontSize: 13, color: '#4B5563', lineHeight: 1.6 }}>
+                              <h3 style={{ margin: '0 0 10px', fontSize: 18, fontWeight: 700, color: '#1E7A46' }}>Pagamento aprovado!</h3>
+                              <p style={{ margin: '0 0 22px', fontSize: 13, color: '#4B5563', lineHeight: 1.6 }}>
                                 Seu pedido foi confirmado. Acompanhe a entrega pela página de rastreio.
                               </p>
                               {codigoRastreamento ? (
                                 <a
                                   href={`/rastreio/${codigoRastreamento}`}
-                                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: COR_PRINCIPAL, color: '#fff', padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700, textDecoration: 'none' }}
+                                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: COR_PRINCIPAL, color: '#fff', width: '100%', maxWidth: 320, height: 48, borderRadius: 10, fontSize: 15, fontWeight: 700, textDecoration: 'none', cursor: 'pointer' }}
                                 >
                                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5v-8z"></path><path d="M3 8l9 5 9-5"></path><path d="M12 13v8"></path></svg>
                                   Acompanhar pedido
