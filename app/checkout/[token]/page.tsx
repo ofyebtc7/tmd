@@ -186,11 +186,14 @@ function CheckoutInner() {
   const [avisoCartao, setAvisoCartao] = useState(false)
   const [pago, setPago] = useState(false)
   const [codigoRastreamento, setCodigoRastreamento] = useState<string | null>(null)
+  const purchaseFiredRef = useRef(false)
 
   // Restaura pedido pós-pagamento no reload:
   // prioriza ?pedidoId=<id> na URL; senão usa o último pedido salvo no localStorage.
   // Verifica o status real do pedido: se NÃO estiver pago, limpa o registro
   // (evita ficar preso num pedido pendente/antigo) e o checkout volta ao formulário.
+  // Se estiver pago mas o código de rastreio ainda não existir, fica em polling
+  // (o intervalo abaixo) até o rastreio ser criado pelo webhook.
   useEffect(() => {
     if (typeof window === 'undefined') return
     const daUrl = params.get('pedidoId')
@@ -453,10 +456,15 @@ function CheckoutInner() {
   async function finalizarComCartao() {
     if (enviandoRef.current) return
     enviandoRef.current = true
+    purchaseFiredRef.current = false
     setTentouSubmitCartao(true)
     setCarregando(true)
     setEnviando(true)
     setErro(null)
+    setPago(false)
+    setCodigoRastreamento(null)
+    setPixCode(null)
+    setQrDataUrl(null)
 
     // AddPaymentInfo — dados de pagamento fornecidos (cartão)
     fbq('track', 'AddPaymentInfo', {
@@ -485,9 +493,14 @@ function CheckoutInner() {
   async function gerarPix() {
     if (enviandoRef.current) return
     enviandoRef.current = true
+    purchaseFiredRef.current = false
     setCarregando(true)
     setEnviando(true)
     setErro(null)
+    setPago(false)
+    setCodigoRastreamento(null)
+    setPixCode(null)
+    setQrDataUrl(null)
 
     // AddPaymentInfo — dados de pagamento fornecidos (PIX)
     fbq('track', 'AddPaymentInfo', {
@@ -532,9 +545,12 @@ function CheckoutInner() {
     }
   }
 
-  // Polling do status do pedido: marca como "pago" e mostra o rastreio
+  // Polling do status do pedido: marca como "pago" e mostra o rastreio.
+  // Continua buscando mesmo após "pago" até o código de rastreio existir,
+  // garantindo que o botão "Acompanhar pedido" leve direto ao PLX... 
+  // (sem o usuário precisar digitar o código). O Purchase é disparado 1x.
   useEffect(() => {
-    if (!pedidoId || pago) return
+    if (!pedidoId || (pago && codigoRastreamento)) return
     let ativo = true
     const tick = async () => {
       try {
@@ -546,21 +562,26 @@ function CheckoutInner() {
           setPago(true)
           setPasso(3)
           setMetodo('pix')
-          if (data.codigoRastreamento) setCodigoRastreamento(data.codigoRastreamento)
+          if (data.codigoRastreamento) {
+            setCodigoRastreamento(data.codigoRastreamento)
 
-          // ── Purchase — browser pixel com event_id estável para deduplicação com CAPI ──
-          fbq(
-            'track',
-            'Purchase',
-            {
-              value: valorTotal,
-              currency: 'BRL',
-              content_ids: [cor],
-              content_type: 'product',
-              num_items: un,
-            },
-            { eventID: gerarEventId(pedidoId, 'Purchase') }
-          )
+            // ── Purchase — browser pixel com event_id estável para deduplicação com CAPI ──
+            if (!purchaseFiredRef.current) {
+              purchaseFiredRef.current = true
+              fbq(
+                'track',
+                'Purchase',
+                {
+                  value: valorTotal,
+                  currency: 'BRL',
+                  content_ids: [cor],
+                  content_type: 'product',
+                  num_items: un,
+                },
+                { eventID: gerarEventId(pedidoId, 'Purchase') }
+              )
+            }
+          }
         }
       } catch {
         // tenta novamente no próximo tick
@@ -569,7 +590,7 @@ function CheckoutInner() {
     tick()
     const id = setInterval(tick, 4000)
     return () => { ativo = false; clearInterval(id) }
-  }, [pedidoId, pago, fbq, valorTotal, cor, un])
+  }, [pedidoId, pago, codigoRastreamento, fbq, valorTotal, cor, un])
 
   async function copiarCodigo() {
     if (!pixCode) return
@@ -959,13 +980,20 @@ function CheckoutInner() {
                               <p style={{ margin: '8px 0 16px', fontSize: 13, color: '#4B5563', lineHeight: 1.6 }}>
                                 Seu pedido foi confirmado. Acompanhe a entrega pela página de rastreio.
                               </p>
-                              <a
-                                href={codigoRastreamento ? `/rastreio/${codigoRastreamento}` : '/rastreio'}
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: COR_PRINCIPAL, color: '#fff', padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700, textDecoration: 'none' }}
-                              >
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5v-8z"></path><path d="M3 8l9 5 9-5"></path><path d="M12 13v8"></path></svg>
-                                Acompanhar pedido
-                              </a>
+                              {codigoRastreamento ? (
+                                <a
+                                  href={`/rastreio/${codigoRastreamento}`}
+                                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: COR_PRINCIPAL, color: '#fff', padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 700, textDecoration: 'none' }}
+                                >
+                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5v-8z"></path><path d="M3 8l9 5 9-5"></path><path d="M12 13v8"></path></svg>
+                                  Acompanhar pedido
+                                </a>
+                              ) : (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 13, color: '#1E7A46', fontWeight: 600 }}>
+                                  <span style={{ width: 14, height: 14, border: '2px solid #A4DFC1', borderTopColor: COR_PRINCIPAL, borderRadius: '50%', animation: 'spin 1s linear infinite' }}></span>
+                                  Gerando código de rastreio...
+                                </div>
+                              )}
                             </div>
                           ) : !pixCode ? (
                             <button onClick={gerarPix} disabled={carregando} style={{ ...btnPrimario, background: carregando ? '#D1D5DB' : COR_PRINCIPAL, margin: 0, cursor: carregando ? 'not-allowed' : 'pointer' }}>
