@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { createHmac, timingSafeEqual } from 'crypto'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { gerarCodigoRastreio } from '@/lib/rastreio/gerar-codigo'
 import { montarEventosRota, type CidadeRota } from '@/lib/rastreio/rota-logistica'
 import { enviarEventoPurchase } from '@/lib/meta/capi'
+import { enviarEventoCompletePayment } from '@/lib/tiktok/compra'
 
 const PINPAY_WEBHOOK_SECRET = process.env.PINPAY_WEBHOOK_SECRET
 
@@ -19,6 +20,7 @@ interface PagamentoRecord {
   pedido_id: string
   gateway_payment_id: string
   status: string
+  data_pagamento: string | null
 }
 
 interface PayloadNormalizado {
@@ -219,7 +221,7 @@ async function findPagamentoByTransactionId(
 
   const { data, error } = await supabaseAdmin
     .from('pagamentos')
-    .select('id, pedido_id, gateway_payment_id, status')
+    .select('id, pedido_id, gateway_payment_id, status, data_pagamento')
     .eq('gateway_payment_id', transactionId)
     .single()
 
@@ -239,7 +241,7 @@ async function findPagamentoPorClienteReference(
 
   const { data, error } = await supabaseAdmin
     .from('pagamentos')
-    .select('id, pedido_id, gateway_payment_id, status')
+    .select('id, pedido_id, gateway_payment_id, status, data_pagamento')
     .eq('pedido_id', clientReference)
     .single()
 
@@ -475,13 +477,16 @@ async function processarEvento(
       try {
         const { data: pedidoPago } = await supabaseAdmin
           .from('pedidos')
-          .select('valor, clientes ( email, telefone, nome, cidade, estado, cep )')
+          .select('valor, quantidade, produtos ( nome ), atribuicao, clientes ( email, telefone, nome, cidade, estado, cep )')
           .eq('id', pagamento.pedido_id)
           .single()
 
         const clientePago = Array.isArray(pedidoPago?.clientes)
           ? pedidoPago?.clientes[0]
           : pedidoPago?.clientes
+        const produtoPago = Array.isArray(pedidoPago?.produtos)
+          ? pedidoPago?.produtos[0]
+          : pedidoPago?.produtos
 
         await enviarEventoPurchase({
           pedidoId: pagamento.pedido_id,
@@ -492,6 +497,27 @@ async function processarEvento(
           cidade: (clientePago as { cidade?: string } | undefined)?.cidade ?? null,
           estado: (clientePago as { estado?: string } | undefined)?.estado ?? null,
           cep: (clientePago as { cep?: string } | undefined)?.cep ?? null,
+        })
+
+        // TikTok CompletePayment — mesmo gatilho do Purchase do Meta:
+        // pagamento CONFIRMADO pelo gateway, nunca o clique do usuário.
+        const atribuicao = (pedidoPago?.atribuicao as
+          | { tiktok?: { ttclid?: string | null; ttp?: string | null } }
+          | null
+          | undefined)?.tiktok
+
+        await enviarEventoCompletePayment({
+          pedidoId: pagamento.pedido_id,
+          valor: Number(pedidoPago?.valor ?? 0),
+          quantidade: pedidoPago?.quantidade ?? null,
+          nomeProduto: (produtoPago as { nome?: string } | undefined)?.nome ?? null,
+          email: (clientePago as { email?: string } | undefined)?.email ?? null,
+          telefone: (clientePago as { telefone?: string } | undefined)?.telefone ?? null,
+          ttclid: atribuicao?.ttclid ?? null,
+          ttp: atribuicao?.ttp ?? null,
+          eventTime: pagamento.data_pagamento
+            ? Math.floor(new Date(pagamento.data_pagamento).getTime() / 1000)
+            : null,
         })
       } catch (erroCapi) {
         console.error('erro_enviar_purchase_capi', erroCapi)

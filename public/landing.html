@@ -22,6 +22,28 @@
 </script>
 <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=2256795818102896&amp;ev=PageView&amp;noscript=1" alt=""></noscript>
 
+<!-- ===== TIKTOK PIXEL — pixel do anunciante (Plugmax) =====
+     O Access Token da Events API NÃO aparece aqui: o browser só fala com o
+     pixel e com a API interna /api/tiktok/*. -->
+<script>
+  !function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"];ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};ttq.load=function(e,n){var i="https://analytics.tiktok.com/libraries/"+e+"/sdk.js";ttq._i=ttq._i||{};ttq._i[e]=[];ttq._i[e]._u=i;ttq._t=ttq._t||{};ttq._t[e]=+new Date;ttq._o=ttq._o||{};ttq._o[e]=n||{};var o=d.createElement("script");o.type="text/javascript";o.async=!0;o.src=i+"?sdkid="+n;var a=d.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
+  ttq.load("sdk",'D6K8EJ3C77UFILRR8NCG');
+  ttq.page();
+  ttq.enableCookie();
+  /* Preserva o TikTok Click ID na navegação para o checkout.
+     O valor do ttclid NÃO é alterado — o TikTok valida o formato dele. */
+  (function(){
+    try {
+      if (document.cookie.indexOf('_ttclid=') > -1) return;
+      var v = new URLSearchParams(location.search).get('ttclid');
+      if (!v) return;
+      document.cookie = '_ttclid=' + encodeURIComponent(v) +
+        '; expires=' + new Date(Date.now() + 90*864e5).toUTCString() +
+        '; path=/; SameSite=Lax';
+    } catch (e) {}
+  })();
+</script>
+
 <!-- ===== UTMIFY — pixel de conversão e captura de UTMs ===== -->
 <script>
   window.pixelId = "6a60410c5a84ff2ea1c6e19f";
@@ -31,7 +53,7 @@
     s.src = "https://cdn.utmify.com.br/scripts/pixel/pixel.js";
     (document.head || document.documentElement).appendChild(s);
   })();
-</script><script async="" defer="" src="https://cdn.utmify.com.br/scripts/pixel/pixel.js"></script>
+</script>
 <!-- Captura de UTMs para o checkout / venda -->
 <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck="" data-utmify-prevent-subids="" async="" defer=""></script>
 
@@ -663,6 +685,63 @@ fbqTrack('ViewContent', Object.assign(itemMeta(), {
   num_items: tierSel().un,
 }));
 
+/* ===== TIKTOK PIXEL — mesmos eventos nos 2 canais, com o MESMO event_id =====
+   Browser → ttq.track(...)  e  Servidor → /api/tiktok/* (Events API).
+   O event_id é criado UMA vez e reutilizado pelos dois lados; é isso que
+   permite ao TikTok reconhecer as duas chamadas como a mesma ocorrência. */
+const ttqEventId = prefixo =>
+  prefixo + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 12);
+
+const conteudoTikTok = tier => [{
+  content_id: 'plugmax_' + String(corKit).toLowerCase().replace(/\s+/g, '-'),
+  content_type: 'product',
+  content_name: 'Tomada Inteligente Plugmax',
+  content_category: 'Tomada inteligente',
+  price: brl(tier.un_por),
+  quantity: tier.un,
+}];
+
+const ttqTrack = (ev, props, eventId) => {
+  try {
+    if (window.ttq && typeof window.ttq.track === 'function') {
+      if (eventId) window.ttq.track(ev, props, { event_id: eventId });
+      else window.ttq.track(ev, props);
+    }
+  } catch (e) {}
+};
+
+/* Fire-and-forget: falha de tracking nunca interrompe a compra. */
+const ttqServidor = (slug, corpo) => {
+  try {
+    fetch('/api/tiktok/' + slug, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(corpo),
+      keepalive: true,
+    }).catch(() => {});
+  } catch (e) {}
+};
+
+(function(){
+  // ViewContent — usuário visualizou o produto na página
+  const tier = tierSel();
+  const eventId = ttqEventId('ViewContent');
+  const props = { currency: 'BRL', value: brl(tier.por), content_type: 'product', contents: conteudoTikTok(tier) };
+  ttqTrack('ViewContent', props, eventId);
+  ttqServidor('view-content', {
+    eventId: eventId,
+    valor: brl(tier.por),
+    moeda: 'BRL',
+    unitPrice: brl(tier.un_por),
+    quantity: tier.un,
+    contentIds: ['plugmax_' + String(corKit).toLowerCase().replace(/\s+/g, '-')],
+    contentName: 'Tomada Inteligente Plugmax',
+    contentType: 'product',
+    eventSourceUrl: location.href,
+  });
+})();
+
+
 /* brinde */
 if (P.brinde) {
   $('#brindeBox').innerHTML =
@@ -740,13 +819,21 @@ function anexarUtms(url){
   } catch (e) { return url; }
 }
 
+/* O event_id do AddToCart é criado UMA vez por visita à landing. O botão
+   destrava em caso de falha de rede (solta()), e cada nova tentativa geraria um
+   id novo — o TikTok contaria um AddToCart por tentativa. Reaproveitar o id faz
+   o Event Manager deduplicar as tentativas e contar uma só intenção. */
+let addToCartEventId = null;
+
 async function iniciarCheckout(btn){
   if (!CHECKOUT_ATIVO) return;
   if (window.__checkoutBusy) return;   // trava duplo-clique / múltiplos botões
   window.__checkoutBusy = true;
 
   // AddToCart — clique no botão de compra (kit/cor selecionados)
-  const addToCartEventId = 'AddToCart_' + Math.floor(Date.now() / 1000) + '_' + Math.floor(Math.random() * 1e6);
+  if (!addToCartEventId) {
+    addToCartEventId = ttqEventId('AddToCart');
+  }
   try {
     if (window.fbq && typeof window.fbq === 'function') {
       window.fbq('track', 'AddToCart', Object.assign(itemMeta(), {
@@ -774,6 +861,28 @@ async function iniciarCheckout(btn){
       }),
       keepalive: true,
     }).catch(() => {});
+
+    /* TikTok: mesmo evento, mesmo event_id, nos dois canais.
+       `value` é o total do kit; `contents[].price` é o preço unitário. */
+    const tierAdd = tierSel();
+    const propsAdd = {
+      currency: 'BRL',
+      value: brl(tierAdd.por),
+      content_type: 'product',
+      contents: conteudoTikTok(tierAdd),
+    };
+    ttqTrack('AddToCart', propsAdd, addToCartEventId);
+    ttqServidor('add-to-cart', {
+      eventId: addToCartEventId,
+      valor: brl(tierAdd.por),
+      moeda: 'BRL',
+      unitPrice: brl(tierAdd.un_por),
+      quantity: tierAdd.un,
+      contentIds: ['plugmax_' + String(corKit).toLowerCase().replace(/\s+/g, '-')],
+      contentName: 'Tomada Inteligente Plugmax',
+      contentType: 'product',
+      eventSourceUrl: location.href,
+    });
   } catch (e) {}
 
   const b = btn && btn.tagName === 'BUTTON' ? btn : null;

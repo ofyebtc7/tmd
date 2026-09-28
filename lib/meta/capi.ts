@@ -50,6 +50,16 @@ export async function enviarEventoPurchase(
     return false
   }
 
+  // Compra sem valor não é uma compra: enviar assim contamina o otimizador do
+  // Meta com conversões de R$ 0 e sem user_data. O que ocorre na prática é o
+  // select do pedido ter falhado (ex.: coluna `atribuicao` ainda não migrada),
+  // devolvendo pedidoPago = null.
+  const valor = Number(dados.valor)
+  if (!Number.isFinite(valor) || valor <= 0) {
+    console.warn('meta_capi_purchase_valor_invalido', { pedido_id: dados.pedidoId })
+    return false
+  }
+
   const userData: Record<string, unknown> = {}
 
   if (dados.email) {
@@ -109,7 +119,7 @@ export async function enviarEventoPurchase(
         action_source: 'website',
         event_id: gerarEventId(dados.pedidoId, 'Purchase'),
         custom_data: {
-          value: Number(dados.valor),
+          value: valor,
           currency: dados.moeda || 'BRL',
           content_type: 'product',
         },
@@ -142,7 +152,7 @@ export async function enviarEventoPurchase(
 
     console.log('meta_capi_purchase_enviado', {
       pedido_id: dados.pedidoId,
-      valor: dados.valor,
+      valor,
       events_received: (corpo as { events_received?: number } | null)?.events_received,
     })
     return true

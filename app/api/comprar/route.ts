@@ -32,6 +32,7 @@ interface ComprarPayload {
   uf: string
   entrega?: string
   cartao?: CartaoSeguroPayload | null
+  tiktok?: { ttclid?: string | null; ttp?: string | null } | null
 }
 
 const VALOR_FRETE: Record<string, number> = {
@@ -62,6 +63,7 @@ export async function POST(request: NextRequest) {
       uf,
       entrega,
       cartao,
+      tiktok,
     } = body
 
     const pedidoToken = verificarTokenPedido(orderToken)
@@ -172,18 +174,47 @@ export async function POST(request: NextRequest) {
     }
 
     // Pedido
-    const { data: pedido, error: erroPedido } = await supabaseAdmin
-      .from('pedidos')
-      .insert({
-        cliente_id: cliente.id,
-        produto_id: produto.id,
-        valor: valorTotal,
-        quantidade,
-        status: 'aguardando_pagamento',
-        canal_venda: 'Checkout Online',
-      })
-      .select('id, token_rastreamento, numero_pedido')
-      .single()
+    // `atribuicao` guarda apenas os tokens de campanha do TikTok (ttclid/ttp),
+    // necessários para o webhook atribuir o CompletePayment ao clique original.
+    // Não guarda IP, user-agent nem dados pessoais do cliente.
+    const ttclid = typeof tiktok?.ttclid === 'string' ? tiktok.ttclid.trim().slice(0, 200) : ''
+    const ttp = typeof tiktok?.ttp === 'string' ? tiktok.ttp.trim().slice(0, 200) : ''
+    const atribuicao = ttclid || ttp ? { tiktok: { ttclid: ttclid || null, ttp: ttp || null } } : null
+
+    const dadosPedido: Record<string, unknown> = {
+      cliente_id: cliente.id,
+      produto_id: produto.id,
+      valor: valorTotal,
+      quantidade,
+      status: 'aguardando_pagamento',
+      canal_venda: 'Checkout Online',
+    }
+
+    if (atribuicao) dadosPedido.atribuicao = atribuicao
+
+    const inserirPedido = async () =>
+      supabaseAdmin
+        .from('pedidos')
+        .insert(dadosPedido)
+        .select('id, token_rastreamento, numero_pedido')
+        .single()
+
+    let resultado = atribuicao ? await inserirPedido() : null
+
+    // Fallback: se a coluna `atribuicao` ainda não existir no banco
+    // (migration não aplicada), o pedido é criado sem ela — o checkout
+    // nunca pode quebrar por causa do tracking.
+    if (resultado?.error && atribuicao) {
+      const codigoErro = resultado.error.code
+      if (codigoErro === '42703' || codigoErro === 'PGRST204') {
+        console.warn('coluna_atribuicao_ausente_pedido_criado_sem_tracking')
+        delete dadosPedido.atribuicao
+        resultado = await inserirPedido()
+      }
+    }
+
+    const { error: erroPedido } = resultado ?? { error: null }
+    const pedido = resultado?.data
 
     if (erroPedido || !pedido) {
       console.error('erro_criar_pedido', { erro: erroPedido?.message })

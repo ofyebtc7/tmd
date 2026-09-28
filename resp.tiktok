@@ -1,0 +1,836 @@
+Agora quero complementar a implementação anterior com a **TikTok Events API (Server-Side)**.
+
+Não substitua o TikTok Pixel do navegador.
+
+A arquitetura desejada é:
+
+```text
+USUÁRIO
+   │
+   ├── Browser
+   │      └── TikTok Pixel
+   │
+   └── Servidor
+          └── TikTok Events API
+```
+
+O objetivo é utilizar os dois mecanismos de forma coordenada e evitar eventos duplicados.
+
+---
+
+# 1. PIXEL
+
+Pixel ID:
+
+```text
+D6K8EJ3C77UFILRR8NCG
+```
+
+O Pixel do navegador já deve continuar funcionando conforme a implementação anterior.
+
+---
+
+# 2. TIKTOK EVENTS API
+
+O TikTok disponibiliza o endpoint:
+
+```text
+/open_api/v1.3/event/track/
+```
+
+A implementação server-side deverá utilizar esse endpoint conforme a documentação oficial do TikTok.
+
+IMPORTANTE:
+
+O Access Token da Events API é uma **credencial privada**.
+
+NÃO colocar o token:
+
+* no frontend;
+* em React client components;
+* em HTML;
+* em JavaScript enviado ao navegador;
+* em arquivos públicos;
+* em `NEXT_PUBLIC_*`;
+* em `VITE_*`;
+* no código-fonte que será enviado para o browser;
+* em localStorage;
+* em sessionStorage;
+* em cookies acessíveis pelo JavaScript;
+* em URLs;
+* em logs.
+
+O token deve existir somente no ambiente server-side.
+
+---
+
+# 3. ACCESS TOKEN
+
+O token que eu forneci anteriormente NÃO deve ser colocado diretamente no código.
+
+Considere-o apenas como referência.
+
+Crie uma variável de ambiente privada adequada ao framework.
+
+Por exemplo, caso seja Next.js:
+
+```text
+TIKTOK_ACCESS_TOKEN=
+TIKTOK_PIXEL_ID=D6K8EJ3C77UFILRR8NCG
+```
+
+NÃO utilize:
+
+```text
+NEXT_PUBLIC_TIKTOK_ACCESS_TOKEN
+```
+
+porque isso poderia expor o token ao navegador.
+
+Se o projeto utilizar outro framework, siga a convenção correta para variáveis exclusivamente server-side.
+
+---
+
+# 4. SEGURANÇA DO TOKEN
+
+Como o token foi exposto durante a configuração, trate-o como potencialmente comprometido.
+
+NÃO reutilize o token exposto.
+
+Estruture o projeto para receber um novo token através de variável de ambiente.
+
+Eu vou gerar/configurar um novo Access Token no painel do TikTok e colocá-lo no ambiente seguro do servidor.
+
+---
+
+# 5. EVENTOS SERVER-SIDE
+
+Analise quais eventos realmente existem no fluxo atual do projeto.
+
+Priorize:
+
+```text
+ViewContent
+AddToCart
+InitiateCheckout
+AddPaymentInfo
+PlaceAnOrder
+Purchase
+```
+
+Não implemente eventos fictícios.
+
+Somente envie um evento quando a ação correspondente realmente acontecer.
+
+---
+
+# 6. EVENT_ID E DEDUPLICAÇÃO
+
+Esta é uma parte CRÍTICA.
+
+Como teremos:
+
+```text
+Browser Pixel
++
+Events API
+```
+
+os mesmos eventos podem chegar ao TikTok pelos dois canais.
+
+Precisamos implementar uma estratégia consistente de `event_id`.
+
+Para eventos que forem enviados tanto pelo browser quanto pelo servidor:
+
+```text
+Browser:
+ttq.track('AddToCart', data, { event_id: EVENT_ID })
+
+Server:
+event_id: EVENT_ID
+```
+
+O mesmo identificador deve representar a mesma ocorrência do evento.
+
+NÃO gere:
+
+```text
+Browser event_id = ABC123
+Server event_id = XYZ789
+```
+
+para o mesmo evento.
+
+Nesse caso o TikTok poderá interpretar como eventos diferentes.
+
+---
+
+# 7. GERAÇÃO DO EVENT_ID
+
+Crie uma função centralizada para gerar identificadores únicos de evento.
+
+Exemplo conceitual:
+
+```javascript
+generateEventId()
+```
+
+O ID deve ser:
+
+* único;
+* suficientemente aleatório;
+* estável durante o processamento daquela ocorrência;
+* reutilizado pelo browser e servidor quando o mesmo evento for enviado pelos dois canais.
+
+Não reutilize o mesmo `event_id` para duas ações diferentes.
+
+Exemplo:
+
+```text
+AddToCart
+event_id = cart_8f72...
+
+InitiateCheckout
+event_id = checkout_4a91...
+
+Purchase
+event_id = purchase_91bc...
+```
+
+---
+
+# 8. NÃO DUPLICAR EVENTOS
+
+Audite cuidadosamente o fluxo.
+
+Exemplo:
+
+Usuário adiciona um produto:
+
+```text
+1 ação do usuário
+       │
+       ├── Browser Pixel → AddToCart
+       │
+       └── Events API → AddToCart
+```
+
+Esses dois eventos devem utilizar o mesmo `event_id`.
+
+O resultado esperado é o TikTok conseguir reconhecer que são a mesma ocorrência.
+
+NÃO faça:
+
+```text
+Browser → AddToCart → event_id A
+Server  → AddToCart → event_id B
+```
+
+para a mesma ação.
+
+---
+
+# 9. VIEWCONTENT
+
+Quando o usuário visualizar um produto:
+
+Browser:
+
+```text
+ViewContent
+```
+
+Servidor:
+
+```text
+ViewContent
+```
+
+se e somente se a arquitetura permitir o envio server-side adequado.
+
+Enviar dados reais:
+
+```text
+content_id
+content_type
+content_name
+value
+currency
+url
+event_time
+event_id
+```
+
+Moeda:
+
+```text
+BRL
+```
+
+Não inventar valores.
+
+---
+
+# 10. ADDTOCART
+
+Quando o usuário adicionar um produto:
+
+```text
+AddToCart
+```
+
+Enviar, quando disponível:
+
+```text
+content_id
+content_type
+content_name
+value
+currency
+event_time
+event_id
+url
+```
+
+Se houver quantidade:
+
+```text
+quantity
+```
+
+utilizar a quantidade real.
+
+O evento deve ocorrer somente depois da operação de adicionar ao carrinho ser realmente executada.
+
+---
+
+# 11. INITIATECHECKOUT
+
+Quando o usuário realmente entrar no fluxo de checkout:
+
+```text
+InitiateCheckout
+```
+
+Enviar os dados reais do carrinho:
+
+```text
+content_id
+content_type
+content_name
+value
+currency
+event_time
+event_id
+url
+```
+
+Se o carrinho tiver múltiplos produtos, representar corretamente os produtos envolvidos conforme o formato aceito pela API.
+
+---
+
+# 12. ADDPAYMENTINFO
+
+Somente implementar:
+
+```text
+AddPaymentInfo
+```
+
+se o projeto realmente tiver uma etapa onde o usuário fornece informações de pagamento.
+
+NÃO disparar apenas porque o usuário abriu o checkout.
+
+---
+
+# 13. PLACEANORDER
+
+Se o fluxo do projeto permitir distinguir:
+
+```text
+pedido realizado
+```
+
+de:
+
+```text
+pagamento concluído
+```
+
+implemente:
+
+```text
+PlaceAnOrder
+```
+
+no momento correspondente.
+
+Não confundir `PlaceAnOrder` com `Purchase`.
+
+---
+
+# 14. PURCHASE
+
+`Purchase` deve representar uma compra/pagamento realmente concluído.
+
+NÃO disparar:
+
+```text
+Purchase
+```
+
+quando o usuário apenas clicar:
+
+```text
+Comprar
+```
+
+ou:
+
+```text
+Finalizar compra
+```
+
+Se o checkout utilizar um sistema externo, investigue se existe:
+
+* webhook;
+* callback;
+* página de sucesso;
+* API;
+* confirmação de pagamento;
+* retorno de status.
+
+O ideal é que o `Purchase` seja gerado a partir de uma confirmação real.
+
+---
+
+# 15. DADOS DO CLIENTE
+
+A Events API permite parâmetros como:
+
+```text
+email
+phone
+external_id
+ip
+user_agent
+ttclid
+ttp
+```
+
+Analise o que o projeto realmente possui e o que pode ser enviado de forma apropriada.
+
+NÃO invente informações.
+
+NÃO capture dados desnecessários.
+
+NÃO coloque informações pessoais em logs.
+
+Se houver hashing exigido pela integração/documentação para determinados identificadores, implemente exatamente conforme a especificação atual do TikTok.
+
+---
+
+# 16. TTCLID
+
+Verifique se a URL de entrada contém:
+
+```text
+ttclid
+```
+
+Se estiver presente:
+
+1. capture corretamente;
+2. preserve durante o fluxo necessário;
+3. disponibilize para o tracking server-side quando apropriado;
+4. não altere o valor;
+5. não o exponha desnecessariamente.
+
+Também verifique se existe integração com `ttp`/cookie do TikTok e se pode ser utilizado corretamente no contexto do projeto.
+
+---
+
+# 17. IP E USER AGENT
+
+Para eventos server-side, avalie a forma correta de obter:
+
+```text
+ip
+user_agent
+```
+
+Quando aplicável.
+
+IMPORTANTE:
+
+O servidor deve obter o IP real do visitante de acordo com a infraestrutura utilizada.
+
+Não confie cegamente em headers que possam ser manipulados.
+
+Se o projeto estiver atrás de:
+
+* Vercel
+* Cloudflare
+* proxy
+* CDN
+* Nginx
+* outro reverse proxy
+
+identifique a infraestrutura antes de implementar a captura.
+
+---
+
+# 18. ARQUITETURA
+
+Crie uma camada server-side dedicada para TikTok, se isso for compatível com a arquitetura existente.
+
+Exemplo conceitual:
+
+```text
+server/
+  integrations/
+    tiktok/
+      events.ts
+      client.ts
+```
+
+ou uma estrutura equivalente adequada ao projeto.
+
+Não crie essa estrutura literalmente se o projeto possuir uma arquitetura diferente.
+
+A implementação deve seguir os padrões existentes.
+
+---
+
+# 19. API INTERNA
+
+Se necessário, crie uma API interna segura.
+
+Fluxo conceitual:
+
+```text
+Frontend
+   │
+   │ evento
+   ▼
+Backend/API interna
+   │
+   │ Access Token privado
+   ▼
+TikTok Events API
+```
+
+O navegador NÃO deve chamar diretamente a API do TikTok utilizando o Access Token privado.
+
+---
+
+# 20. ERROS DA API
+
+A integração deve tratar:
+
+* timeout;
+* erro HTTP;
+* resposta inválida;
+* indisponibilidade temporária;
+* rate limit;
+* erro de autenticação.
+
+O tracking não pode derrubar o checkout.
+
+Exemplo:
+
+```text
+Falha TikTok
+      ↓
+Registrar erro técnico de forma segura
+      ↓
+Continuar fluxo do usuário
+```
+
+O usuário deve conseguir finalizar a compra mesmo que o TikTok esteja temporariamente indisponível.
+
+---
+
+# 21. LOGS
+
+Não registrar em logs:
+
+```text
+Access Token
+email em texto puro
+telefone em texto puro
+dados sensíveis
+```
+
+Os logs devem ser seguros e úteis para diagnóstico.
+
+Por exemplo:
+
+```text
+TikTok event sent
+event=AddToCart
+event_id=...
+status=success
+```
+
+Sem expor credenciais ou PII desnecessariamente.
+
+---
+
+# 22. EVENTOS MÍNIMOS
+
+Depois de analisar o projeto, tente suportar pelo menos:
+
+```text
+ViewContent
+AddToCart
+InitiateCheckout
+```
+
+E, caso o fluxo permita corretamente:
+
+```text
+AddPaymentInfo
+PlaceAnOrder
+Purchase
+```
+
+Não force eventos que não correspondam às funcionalidades existentes.
+
+---
+
+# 23. TESTE
+
+Depois da implementação:
+
+### Teste 1
+
+Abrir página.
+
+Verificar:
+
+```text
+PageView
+```
+
+### Teste 2
+
+Abrir produto.
+
+Verificar:
+
+```text
+ViewContent
+```
+
+### Teste 3
+
+Adicionar produto.
+
+Verificar:
+
+```text
+AddToCart
+```
+
+### Teste 4
+
+Entrar no checkout.
+
+Verificar:
+
+```text
+InitiateCheckout
+```
+
+### Teste 5
+
+Se existir etapa de pagamento:
+
+```text
+AddPaymentInfo
+```
+
+### Teste 6
+
+Criar pedido:
+
+```text
+PlaceAnOrder
+```
+
+### Teste 7
+
+Concluir pagamento real/teste:
+
+```text
+Purchase
+```
+
+---
+
+# 24. AUDITORIA DE EVENT_ID
+
+Para cada evento enviado pelos dois canais, documente:
+
+```text
+Evento
+Browser event_id
+Server event_id
+São iguais?
+```
+
+Exemplo:
+
+```text
+AddToCart
+Browser: abc123
+Server: abc123
+Deduplicação: OK
+```
+
+---
+
+# 25. BUILD E PRODUÇÃO
+
+Depois de implementar:
+
+```text
+npm install
+npm run lint
+npm run build
+```
+
+ou os comandos equivalentes encontrados no projeto.
+
+Corrija qualquer erro introduzido pela implementação.
+
+Não finalize enquanto o build estiver quebrado.
+
+---
+
+# 26. VERIFICAÇÃO FINAL
+
+No final, me entregue um relatório:
+
+## Pixel
+
+```text
+Pixel ID:
+D6K8EJ3C77UFILRR8NCG
+```
+
+## Browser Pixel
+
+```text
+PageView: OK/PENDENTE
+ViewContent: OK/PENDENTE
+AddToCart: OK/PENDENTE
+InitiateCheckout: OK/PENDENTE
+AddPaymentInfo: OK/PENDENTE
+PlaceAnOrder: OK/PENDENTE
+Purchase: OK/PENDENTE
+```
+
+## Events API
+
+```text
+ViewContent: OK/PENDENTE
+AddToCart: OK/PENDENTE
+InitiateCheckout: OK/PENDENTE
+AddPaymentInfo: OK/PENDENTE
+PlaceAnOrder: OK/PENDENTE
+Purchase: OK/PENDENTE
+```
+
+## Deduplicação
+
+```text
+event_id: OK/PENDENTE
+```
+
+## Segurança
+
+Verificar:
+
+```text
+Access Token exposto no frontend: NÃO
+Access Token em código público: NÃO
+Access Token em NEXT_PUBLIC/VITE público: NÃO
+Access Token em logs: NÃO
+```
+
+## Build
+
+```text
+Lint: OK/ERRO
+Build: OK/ERRO
+TypeScript: OK/ERRO
+```
+
+## Arquivos modificados
+
+Liste todos.
+
+## Variáveis de ambiente necessárias
+
+Liste somente os nomes das variáveis, NUNCA seus valores secretos.
+
+## Pendências
+
+Liste qualquer integração que dependa de:
+
+* checkout externo;
+* gateway;
+* webhook;
+* confirmação de pagamento;
+* infraestrutura do servidor;
+* configuração do TikTok.
+
+---
+
+# REGRA FINAL
+
+NÃO considere a tarefa concluída apenas porque o código foi escrito.
+
+Primeiro:
+
+```text
+ANALISAR
+↓
+IMPLEMENTAR
+↓
+TESTAR
+↓
+VALIDAR
+↓
+AUDITAR
+↓
+CORRIGIR
+↓
+BUILD
+↓
+RELATÓRIO FINAL
+```
+
+A implementação deve preservar completamente o design e as funcionalidades existentes da página de vendas.
+
+O objetivo é ter:
+
+```text
+TikTok Browser Pixel
+        +
+TikTok Events API
+        +
+event_id consistente
+        +
+deduplicação
+        +
+Access Token protegido
+        +
+tracking dos eventos reais
+        +
+Purchase somente após confirmação real
+```
+
+sem prejudicar o funcionamento do site ou do checkout.

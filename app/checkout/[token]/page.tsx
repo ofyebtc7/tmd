@@ -3,6 +3,14 @@
 import { useParams, useSearchParams } from 'next/navigation'
 import { Suspense, useState, useEffect, useCallback, useRef } from 'react'
 import { capturarFbc, lerFbp, gerarEventId } from '@/lib/meta/pixel'
+import {
+  capturarTtclid,
+  iniciarDrenagemTikTok,
+  lerTtclid,
+  lerTtp,
+  rastrearEvento,
+} from '@/lib/tiktok/pixel'
+import { CONTENT_CATEGORY, EVENTOS_TIKTOK, gerarEventIdAleatorio, gerarEventIdDoPedido } from '@/lib/tiktok/eventos'
 
 const IMG_BASE = '/img/'
 const STORAGE_PEDIDO_ID = 'plugmax_pedido_id'
@@ -187,6 +195,7 @@ function CheckoutInner() {
   const [pago, setPago] = useState(false)
   const [codigoRastreamento, setCodigoRastreamento] = useState<string | null>(null)
   const purchaseFiredRef = useRef(false)
+  const tiktokPurchaseFiredRef = useRef(false)
 
   // Restaura pedido pós-pagamento no reload:
   // prioriza ?pedidoId=<id> na URL; senão usa o último pedido salvo no localStorage.
@@ -321,6 +330,24 @@ function CheckoutInner() {
     return () => clearInterval(timer)
   }, [flushFilaFbq])
 
+  // ── Helpers TikTok ────────────────────────────────────────────────────────
+  // `ttq` (pixel) e a API interna /api/tiktok (Events API) recebem o MESMO
+  // event_id em cada ação — é o que faz o TikTok deduplicar os dois canais.
+  const enviarEventoServidor = useCallback((slug: string, corpo: Record<string, unknown>) => {
+    void fetch(`/api/tiktok/${slug}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(corpo),
+      keepalive: true,
+    }).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    // Preserva o TikTok Click ID e habilita a fila enquanto o snippet carrega.
+    capturarTtclid()
+    return iniciarDrenagemTikTok()
+  }, [])
+
   // ── InitiateCheckout + ViewContent — dispara 1x ao abrir o checkout ────────
   useEffect(() => {
     // Persistir cookies de atribuição do Meta o quanto antes (fbclid → _fbc)
@@ -372,6 +399,47 @@ function CheckoutInner() {
       body: JSON.stringify({ ...dadosEvento, eventId: eventIdInitiateCheckout }),
       keepalive: true,
     }).catch(() => {})
+
+    // ── TikTok: ViewContent + InitiateCheckout (browser + Events API) ────────
+    // O event_id nasce aqui e é o mesmo nos dois canais. Eventos ViewContent
+    // fired no click de "comprar" na landing usam o prefixo `ViewContent_`,
+    // então nunca colidem com este `ViewContent_<id_aleatorio>`.
+    const eventIdTtViewContent = gerarEventIdAleatorio(EVENTOS_TIKTOK.ViewContent)
+    rastrearEvento(
+      EVENTOS_TIKTOK.ViewContent,
+      propsTikTok(un),
+      eventIdTtViewContent
+    )
+    enviarEventoServidor('view-content', {
+      eventId: eventIdTtViewContent,
+      valor: valorTotal,
+      moeda: 'BRL',
+      unitPrice: valorUnitario,
+      quantity: un,
+      contentIds: [cor],
+      contentName: produto.nome,
+      contentType: 'product',
+      eventSourceUrl: typeof window !== 'undefined' ? window.location.href : null,
+    })
+
+    // InitiateCheckout: usuário entrou no fluxo de checkout
+    const eventIdTtInitiate = gerarEventIdAleatorio(EVENTOS_TIKTOK.InitiateCheckout)
+    rastrearEvento(
+      EVENTOS_TIKTOK.InitiateCheckout,
+      propsTikTok(un),
+      eventIdTtInitiate
+    )
+    enviarEventoServidor('initiate-checkout', {
+      eventId: eventIdTtInitiate,
+      valor: valorTotal,
+      moeda: 'BRL',
+      unitPrice: valorUnitario,
+      quantity: un,
+      contentIds: [cor],
+      contentName: produto.nome,
+      contentType: 'product',
+      eventSourceUrl: typeof window !== 'undefined' ? window.location.href : null,
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // array vazio: só na montagem
 
@@ -392,6 +460,32 @@ function CheckoutInner() {
   // Valor total com frete
   const valorFrete = entrega === 'sedex' ? 14.9 : entrega === 'full' ? 21.9 : 0
   const valorTotal = valor + valorFrete
+
+  // Conteúdos no formato `properties.contents` da Events API.
+  // TikTok: `value` é o TOTAL do pedido; `contents[].price` é o preço de UMA unidade.
+  const conteudosTikTok = useCallback(
+    (quantidade: number) => [
+      {
+        content_id: cor,
+        content_type: 'product' as const,
+        content_name: produto.nome,
+        content_category: CONTENT_CATEGORY,
+        price: valorUnitario,
+        quantity: quantidade,
+      },
+    ],
+    [cor, produto.nome, valorUnitario]
+  )
+
+  const propsTikTok = useCallback(
+    (quantidade: number) => ({
+      currency: 'BRL',
+      value: valorTotal,
+      content_type: 'product' as const,
+      contents: conteudosTikTok(quantidade),
+    }),
+    [valorTotal, conteudosTikTok]
+  )
 
   // Parcelas (1x a 12x)
   const opcoesParcelas = Array.from({ length: 12 }, (_, i) => {
@@ -466,8 +560,61 @@ function CheckoutInner() {
             ultimosDigitos: cartaoNumLimpo.slice(-4),
           }
         : null,
+      // Atribuição do TikTok (ttclid/ttp) para o webhook poder enviar o
+      // CompletePayment com a mesma origem do clique. São tokens de campanha,
+      // não dados pessoais do cliente.
+      tiktok: {
+        ttclid: lerTtclid(),
+        ttp: lerTtp(),
+      },
     }
   }
+
+  // AddPaymentInfo + PlaceAnOrder — disparados DEPOIS da criação do pedido,
+  // com o mesmo event_id nos dois canais (derivado do pedidoId, então o
+  // webhook e o browser concordam sem precisar trocar nada).
+  const notificarPedidoCriado = useCallback(
+    (novoPedidoId: string) => {
+      const corpoComum = {
+        valor: valorTotal,
+        moeda: 'BRL',
+        unitPrice: valorUnitario,
+        quantity: un,
+        contentIds: [cor],
+        contentName: produto.nome,
+        contentType: 'product',
+        eventSourceUrl: typeof window !== 'undefined' ? window.location.href : null,
+        email,
+        telefone: tel,
+      }
+
+      // AddPaymentInfo: o usuário informou os dados de pagamento (PIX/cartão)
+      const eventIdPagamento = gerarEventIdDoPedido(novoPedidoId, EVENTOS_TIKTOK.AddPaymentInfo)
+      rastrearEvento(
+        EVENTOS_TIKTOK.AddPaymentInfo,
+        { ...propsTikTok(un), payment_method: metodo },
+        eventIdPagamento
+      )
+      enviarEventoServidor('add-payment-info', { ...corpoComum, eventId: eventIdPagamento })
+
+      // PlaceAnOrder: pedido realmente criado (existe no banco)
+      const eventIdPedido = gerarEventIdDoPedido(novoPedidoId, EVENTOS_TIKTOK.PlaceAnOrder)
+      rastrearEvento(EVENTOS_TIKTOK.PlaceAnOrder, propsTikTok(un), eventIdPedido)
+      enviarEventoServidor('place-an-order', { ...corpoComum, eventId: eventIdPedido })
+    },
+    [
+      enviarEventoServidor,
+      propsTikTok,
+      valorTotal,
+      valorUnitario,
+      un,
+      cor,
+      produto.nome,
+      email,
+      tel,
+      metodo,
+    ]
+  )
 
   // Salva cliente + pedido (+ cartão) no Supabase. NÃO gera PIX.
   async function salvarPedidoBanco() {
@@ -485,6 +632,7 @@ function CheckoutInner() {
     if (enviandoRef.current) return
     enviandoRef.current = true
     purchaseFiredRef.current = false
+    tiktokPurchaseFiredRef.current = false
     setTentouSubmitCartao(true)
     setCarregando(true)
     setEnviando(true)
@@ -509,6 +657,7 @@ function CheckoutInner() {
       setPedidoId(meupedidoId)
       window.localStorage.setItem(STORAGE_PEDIDO_ID, meupedidoId)
       setAvisoCartao(true)
+      notificarPedidoCriado(meupedidoId)
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Erro inesperado')
     } finally {
@@ -522,6 +671,7 @@ function CheckoutInner() {
     if (enviandoRef.current) return
     enviandoRef.current = true
     purchaseFiredRef.current = false
+    tiktokPurchaseFiredRef.current = false
     setCarregando(true)
     setEnviando(true)
     setErro(null)
@@ -545,6 +695,7 @@ function CheckoutInner() {
       const meupedidoId = await salvarPedidoBanco()
       setPedidoId(meupedidoId)
       window.localStorage.setItem(STORAGE_PEDIDO_ID, meupedidoId)
+      notificarPedidoCriado(meupedidoId)
 
       // 2) Gera o PIX para o pedido recém-criado
       const res = await fetch('/api/gerar-pix', {
@@ -590,6 +741,20 @@ function CheckoutInner() {
           setPago(true)
           setPasso(3)
           setMetodo('pix')
+
+          // ── TikTok CompletePayment (= Purchase no Ads Manager) ──
+          // Só dispara quando o status do pedido é realmente "pago", e com o
+          // event_id derivado do pedidoId — o mesmo que o webhook do gateway
+          // envia pela Events API, então o TikTok deduplica.
+          if (!tiktokPurchaseFiredRef.current) {
+            tiktokPurchaseFiredRef.current = true
+            rastrearEvento(
+              EVENTOS_TIKTOK.CompletePayment,
+              propsTikTok(un),
+              gerarEventIdDoPedido(pedidoId, EVENTOS_TIKTOK.CompletePayment)
+            )
+          }
+
           if (data.codigoRastreamento) {
             setCodigoRastreamento(data.codigoRastreamento)
 
@@ -618,7 +783,7 @@ function CheckoutInner() {
     tick()
     const id = setInterval(tick, 4000)
     return () => { ativo = false; clearInterval(id) }
-  }, [pedidoId, pago, codigoRastreamento, fbq, valorTotal, cor, un])
+  }, [pedidoId, pago, codigoRastreamento, fbq, valorTotal, cor, un, propsTikTok])
 
   async function copiarCodigo() {
     if (!pixCode) return
