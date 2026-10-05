@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 284 24" width="284" height="24" role="img" aria-label="Formas de pagamento: Pix, Visa, Mastercard, Elo, American Express e Hipercard">
+  <style>
+    .b { fill:#fff; stroke:#E3E7EE; }
+    .t { font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif; font-weight:700; text-anchor:middle; }
+  </style>
+
+  <!-- Pix -->
+  <rect class="b" x=".5" y=".5" width="73" height="23" rx="4"/>
+  <path d="M15 6.6l3.4 3.4a2.8 2.8 0 0 1 0 4l-3.4 3.4a2.8 2.8 0 0 1-4 0L7.6 14a2.8 2.8 0 0 1 0-4L11 6.6a2.8 2.8 0 0 1 4 0z" fill="#32BCAD"/>
+  <path d="M13 9.4L15.6 12 13 14.6 10.4 12 13 9.4z" fill="#fff"/>
+  <text class="t" x="43" y="16.4" font-size="12" fill="#32BCAD">Pix</text>
+
+  <!-- Visa -->
+  <rect class="b" x="78.5" y=".5" width="37" height="23" rx="4"/>
+  <text class="t" x="97" y="16.2" font-size="10.5" font-style="italic" fill="#1A1F71">VISA</text>
+
+  <!-- Mastercard -->
+  <rect class="b" x="120.5" y=".5" width="37" height="23" rx="4"/>
+  <circle cx="135" cy="12" r="6.5" fill="#EB001B"/>
+  <circle cx="143" cy="12" r="6.5" fill="#F79E1B"/>
+  <path d="M139 6.877a6.5 6.5 0 0 1 0 10.246 6.5 6.5 0 0 1 0-10.246z" fill="#FF5F00"/>
+
+  <!-- Elo -->
+  <rect class="b" x="162.5" y=".5" width="37" height="23" rx="4"/>
+  <text class="t" x="181" y="14.6" font-size="10.5" fill="#000">elo</text>
+  <rect x="170.5" y="16.6" width="7" height="2" rx="1" fill="#FFCB05"/>
+  <rect x="177.5" y="16.6" width="7" height="2" rx="1" fill="#EF4123"/>
+  <rect x="184.5" y="16.6" width="7" height="2" rx="1" fill="#00A4E0"/>
+
+  <!-- American Express -->
+  <rect class="b" x="204.5" y=".5" width="37" height="23" rx="4"/>
+  <text class="t" x="223" y="15.8" font-size="9" fill="#006FCF">AMEX</text>
+
+  <!-- Hipercard -->
+  <rect class="b" x="246.5" y=".5" width="37" height="23" rx="4"/>
+  <text class="t" x="265" y="15.8" font-size="9" fill="#B3131B">hiper</text>
+</svg>
